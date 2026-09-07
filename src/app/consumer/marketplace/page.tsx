@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -13,13 +13,17 @@ export default function MarketplacePage() {
   const [products, setProducts] = useState<ConsumerProduct[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    consumerService.getProducts().then(setProducts);
+    consumerService.getProducts().then((res) => {
+      setProducts(res);
+      setLoading(false);
+    });
   }, []);
 
-  const handleAddToCart = (product: ConsumerProduct) => {
-    consumerService.addToCart(product, product.minOrderKg);
+  const handleAddToCart = async (product: ConsumerProduct) => {
+    await consumerService.addToCart(product.id, product.minOrderKg);
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 2000);
   };
@@ -46,8 +50,8 @@ export default function MarketplacePage() {
             </Button>
           </Link>
           <Link href="/consumer/cart">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-500">
-              <ShoppingCart className="w-4 h-4" />
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
+              <ShoppingCart className="w-4 h-4 mr-1.5" />
               <span>View Cart</span>
             </Button>
           </Link>
@@ -71,6 +75,17 @@ export default function MarketplacePage() {
         ))}
       </div>
 
+      {loading && (
+        <div className="p-12 text-center text-xs text-slate-400">Loading marketplace produce...</div>
+      )}
+
+      {!loading && filtered.length === 0 && (
+        <Card className="p-12 text-center space-y-3">
+          <h3 className="font-bold text-slate-900 dark:text-white text-base">No produce available in this category</h3>
+          <p className="text-xs text-slate-400">Harvests will appear here once connected farmers list available stock.</p>
+        </Card>
+      )}
+
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {filtered.map((prod) => (
@@ -79,11 +94,11 @@ export default function MarketplacePage() {
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
-                    {prod.image}
+                    {prod.image || '🌾'}
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">{prod.name}</h3>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{prod.hindiName} • {prod.farmLocation}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{prod.hindiName || ''} • {prod.farmLocation}</span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black">

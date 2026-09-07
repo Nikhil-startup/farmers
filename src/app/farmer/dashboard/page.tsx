@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,11 +29,19 @@ export default function FarmerDashboard() {
   const [produceList, setProduceList] = useState<Produce[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setProduceList(farmerService.getProduceList());
-    trackingService.getOrders().then(setOrders);
-    aiService.getRecommendations().then(setRecommendations);
+    Promise.all([
+      farmerService.getProduceList(),
+      trackingService.getOrders(),
+      aiService.getRecommendations(),
+    ]).then(([prods, ords, recs]) => {
+      setProduceList(prods);
+      setOrders(ords);
+      setRecommendations(recs);
+      setLoading(false);
+    });
   }, []);
 
   const topRec = recommendations[0];
@@ -48,7 +56,7 @@ export default function FarmerDashboard() {
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Farmer Command Center</span>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Namaste, {user?.name || 'Farmer'} 🌾</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {user?.farmName} • {user?.location}
+            {user?.farmName || 'Primary Farm'} • {user?.location || 'Verified Agricultural Cluster'}
           </p>
         </div>
         <div>
@@ -72,8 +80,8 @@ export default function FarmerDashboard() {
               <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">High Opportunity</span>
               <span className="text-xs font-bold text-emerald-300">Hyderabad Urban Corridor</span>
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-white mt-1">Tomato demand is 18% above local supply (1,800 kg deficit)</h2>
-            <p className="text-xs text-slate-300">Bowenpally direct buyer offering <strong>₹42.00/kg</strong> vs current mandi ₹38.00/kg.</p>
+            <h2 className="text-base sm:text-lg font-bold text-white mt-1">Direct Institutional Buyer Demand Available</h2>
+            <p className="text-xs text-slate-300">Verified buyers offering direct contracts with transparent road cold logistics.</p>
           </div>
         </div>
         <Link href="/farmer/recommendations" className="w-full sm:w-auto">
@@ -138,45 +146,56 @@ export default function FarmerDashboard() {
           </Link>
         </div>
 
-        <div className="space-y-3">
-          {produceList.slice(0, 3).map((item) => (
-            <div
-              key={item.id}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
-                  🌾
+        {loading ? (
+          <div className="p-8 text-center text-xs text-slate-400">Loading produce inventory...</div>
+        ) : produceList.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-400 space-y-2">
+            <p>No produce listed yet.</p>
+            <Link href="/farmer/produce">
+              <Button size="sm" className="bg-emerald-600 text-white">Add Your First Crop</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {produceList.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
+                    🌾
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{item.crop}</h4>
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] border border-emerald-500/20">
+                        Grade {item.grade}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Available: <strong className="text-slate-700 dark:text-slate-300">{item.quantity?.toLocaleString()} {item.unit}</strong> • {item.location}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{item.crop}</h4>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] border border-emerald-500/20">
-                      Grade {item.grade}
+
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  <div className="text-left sm:text-right">
+                    <span className="text-[10px] text-slate-400 block">Expected Price</span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                      {formatINR(item.expectedPrice)}/{item.unit}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Available: <strong className="text-slate-700 dark:text-slate-300">{item.quantity.toLocaleString()} {item.unit}</strong> • {item.location}
-                  </p>
+                  <Link href="/farmer/produce">
+                    <Button size="sm" variant="secondary" className="px-3 py-1.5 text-xs">
+                      Edit
+                    </Button>
+                  </Link>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                <div className="text-left sm:text-right">
-                  <span className="text-[10px] text-slate-400 block">Expected Price</span>
-                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                    {formatINR(item.expectedPrice)}/{item.unit}
-                  </span>
-                </div>
-                <Link href="/farmer/produce">
-                  <Button size="sm" variant="secondary" className="px-3 py-1.5 text-xs">
-                    Edit
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* 5. ACTIVE ORDERS */}
@@ -203,7 +222,7 @@ export default function FarmerDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <span className="font-mono text-xs text-slate-400 font-bold">{activeOrder.id}</span>
-                <h4 className="text-base font-bold text-white">{activeOrder.produceName} ({activeOrder.quantityKg.toLocaleString()} kg)</h4>
+                <h4 className="text-base font-bold text-white">{activeOrder.produceName} ({activeOrder.quantityKg?.toLocaleString()} kg)</h4>
                 <p className="text-xs text-slate-300">Buyer: {activeOrder.buyerName}</p>
               </div>
               <div className="text-left sm:text-right">

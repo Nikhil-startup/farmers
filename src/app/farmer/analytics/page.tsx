@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card } from '@/components/common/Card';
 import { marketPriceService } from '@/services/marketPriceService';
 import { aiService } from '@/services/aiService';
-import { PriceTrendPoint, AIRecommendation } from '@/types/farmer';
+import { PriceTrendPoint, SIHScenarioData } from '@/types/farmer';
 import { formatINR } from '@/lib/utils';
 import {
   ArrowLeft,
@@ -24,13 +24,13 @@ import {
 
 export default function FarmerAnalyticsPage() {
   const [priceTrends, setPriceTrends] = useState<PriceTrendPoint[]>([]);
+  const [sihData, setSihData] = useState<SIHScenarioData | null>(null);
   const [activeTab, setActiveTab] = useState<'trends' | 'realization'>('trends');
 
   useEffect(() => {
     marketPriceService.getPriceTrends('Tomato').then(setPriceTrends);
+    aiService.getSIHScenario('Tomato').then(setSihData);
   }, []);
-
-  const sihData = aiService.getSIHScenario();
 
   return (
     <div className="space-y-6">
@@ -151,36 +151,42 @@ export default function FarmerAnalyticsPage() {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Conventional Intermediary vs. AgriFlow Direct Realization</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Itemized comparison on 5,000 kg lot showing net farmer bank deposits.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
-                <span className="text-xs font-bold text-rose-500 uppercase tracking-wider block">Traditional Mandi Intermediary Route</span>
-                <div className="text-3xl font-black text-slate-900 dark:text-white">{formatINR(sihData.conventionalPrice)}/kg</div>
-                <div className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
-                  <div className="flex justify-between"><span>Middlemen commission (3 levels):</span> <span className="text-rose-500">-{formatINR(6.00)}/kg</span></div>
-                  <div className="flex justify-between"><span>Unregulated weighment deductions:</span> <span className="text-rose-500">-{formatINR(3.00)}/kg</span></div>
-                  <div className="flex justify-between font-bold text-slate-900 dark:text-white pt-1"><span>Total Gross Realization (5,000 kg):</span> <span>{formatINR(sihData.conventionalPrice * 5000)}</span></div>
+            {sihData ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                  <span className="text-xs font-bold text-rose-500 uppercase tracking-wider block">Traditional Mandi Intermediary Route</span>
+                  <div className="text-3xl font-black text-slate-900 dark:text-white">{formatINR(sihData.conventionalPrice)}/kg</div>
+                  <div className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex justify-between"><span>Middlemen commission (3 levels):</span> <span className="text-rose-500">-{formatINR(6.00)}/kg</span></div>
+                    <div className="flex justify-between"><span>Unregulated weighment deductions:</span> <span className="text-rose-500">-{formatINR(3.00)}/kg</span></div>
+                    <div className="flex justify-between font-bold text-slate-900 dark:text-white pt-1"><span>Total Gross Realization (5,000 kg):</span> <span>{formatINR(sihData.conventionalPrice * 5000)}</span></div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-500/40 space-y-3">
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">AgriFlow Direct Institutional Route</span>
-                <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{formatINR(sihData.agriflowRealization)}/kg</div>
-                <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-emerald-500/30">
-                  <div className="flex justify-between"><span>Buyer Agreed Contract Price:</span> <span className="font-semibold text-white">{formatINR(45.00)}/kg</span></div>
-                  <div className="flex justify-between"><span>Consolidated Road Cold Freight:</span> <span>-{formatINR(2.00)}/kg</span></div>
-                  <div className="flex justify-between"><span>Platform & Escrow Fee:</span> <span>-{formatINR(1.00)}/kg</span></div>
-                  <div className="flex justify-between font-bold text-emerald-600 dark:text-emerald-400 pt-1 text-sm">
-                    <span>Total Net Farmer Deposit (5,000 kg):</span>
-                    <span>{formatINR(sihData.agriflowRealization * 5000)}</span>
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-500/40 space-y-3">
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">AgriFlow Direct Institutional Route</span>
+                  <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{formatINR(sihData.agriflowRealization)}/kg</div>
+                  <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-emerald-500/30">
+                    <div className="flex justify-between"><span>Buyer Agreed Contract Price:</span> <span className="font-semibold text-white">{formatINR(45.00)}/kg</span></div>
+                    <div className="flex justify-between"><span>Consolidated Road Cold Freight:</span> <span>-{formatINR(2.00)}/kg</span></div>
+                    <div className="flex justify-between"><span>Platform & Escrow Fee:</span> <span>-{formatINR(1.00)}/kg</span></div>
+                    <div className="flex justify-between font-bold text-emerald-600 dark:text-emerald-400 pt-1 text-sm">
+                      <span>Total Net Farmer Deposit (5,000 kg):</span>
+                      <span>{formatINR(sihData.agriflowRealization * 5000)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-400">Realization benchmark data unavailable.</div>
+            )}
 
-            <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs flex items-center justify-between">
-              <span className="font-medium text-emerald-800 dark:text-emerald-300">Total Added Net Income for Farmer on this lot:</span>
-              <span className="text-base font-black text-emerald-600 dark:text-emerald-400">+{formatINR(sihData.totalAdditionalRealization)} (+{sihData.percentageImprovement}%)</span>
-            </div>
+            {sihData && (
+              <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs flex items-center justify-between">
+                <span className="font-medium text-emerald-800 dark:text-emerald-300">Total Added Net Income for Farmer on this lot:</span>
+                <span className="text-base font-black text-emerald-600 dark:text-emerald-400">+{formatINR(sihData.totalAdditionalRealization)} (+{sihData.percentageImprovement}%)</span>
+              </div>
+            )}
           </Card>
         </div>
       )}

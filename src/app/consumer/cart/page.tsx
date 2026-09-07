@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -11,21 +11,31 @@ import { Trash2, ShoppingCart, ArrowRight, ShieldCheck, Truck } from 'lucide-rea
 
 export default function CartPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setCart(consumerService.getCart());
+    consumerService.getCart().then((items) => {
+      setCart(items);
+      setLoading(false);
+    });
   }, []);
 
-  const handleRemove = (productId: string) => {
-    const updated = consumerService.removeFromCart(productId);
+  const handleRemove = async (productId: string) => {
+    const updated = await consumerService.removeFromCart(productId);
     setCart(updated);
   };
 
   const totalKg = cart.reduce((acc, item) => acc + item.quantityKg, 0);
-  const totalAmount = cart.reduce((acc, item) => acc + (item.quantityKg * item.product.consumerPricePerKg), 0);
-  const totalFarmerPayout = cart.reduce((acc, item) => acc + (item.quantityKg * item.product.farmerRealizationPerKg), 0);
-  const totalLogistics = cart.reduce((acc, item) => acc + (item.quantityKg * item.product.logisticsFeePerKg), 0);
-  const totalPlatform = cart.reduce((acc, item) => acc + (item.quantityKg * item.product.platformFeePerKg), 0);
+  const totalAmount = cart.reduce((acc, item) => acc + (item.quantityKg * (item.product?.consumerPricePerKg || 0)), 0);
+  const totalFarmerPayout = cart.reduce((acc, item) => acc + (item.quantityKg * (item.product?.farmerRealizationPerKg || 0)), 0);
+  const totalLogistics = cart.reduce((acc, item) => acc + (item.quantityKg * (item.product?.logisticsFeePerKg || 0)), 0);
+  const totalPlatform = cart.reduce((acc, item) => acc + (item.quantityKg * (item.product?.platformFeePerKg || 0)), 0);
+
+  if (loading) {
+    return (
+      <div className="p-12 text-center text-xs text-slate-400">Loading procurement cart...</div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -34,7 +44,7 @@ export default function CartPage() {
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Your Procurement Cart is Empty</h2>
         <p className="text-xs text-slate-400">Discover fresh harvest batches direct from verified farmer clusters.</p>
         <Link href="/consumer/marketplace">
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-500">
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
             Browse Marketplace
           </Button>
         </Link>
@@ -55,33 +65,33 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           {cart.map((item) => (
-            <Card key={item.product.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Card key={item.product?.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
-                  {item.product.image}
+                  {item.product?.image || '🌾'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">{item.product.name}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">{item.product?.name}</h3>
                     <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                      Grade {item.product.grade}
+                      Grade {item.product?.grade}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Farmer: {item.product.farmerName} • {item.product.farmLocation}
+                    Farmer: {item.product?.farmerName} • {item.product?.farmLocation}
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1">
-                    {formatINR(item.product.consumerPricePerKg)}/kg × {item.quantityKg.toLocaleString()} kg = {formatINR(item.quantityKg * item.product.consumerPricePerKg)}
+                    {formatINR(item.product?.consumerPricePerKg || 0)}/kg × {item.quantityKg.toLocaleString()} kg = {formatINR(item.quantityKg * (item.product?.consumerPricePerKg || 0))}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 w-full sm:w-auto justify-between">
                 <span className="text-sm font-black text-slate-900 dark:text-white sm:hidden">
-                  {formatINR(item.quantityKg * item.product.consumerPricePerKg)}
+                  {formatINR(item.quantityKg * (item.product?.consumerPricePerKg || 0))}
                 </span>
                 <button
-                  onClick={() => handleRemove(item.product.id)}
+                  onClick={() => handleRemove(item.product?.id)}
                   className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
                   title="Remove item"
                 >

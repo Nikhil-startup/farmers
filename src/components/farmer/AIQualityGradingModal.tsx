@@ -33,7 +33,7 @@ export function AIQualityGradingModal({ isOpen, onClose, cropName, onGradeApplie
   const runAnalysis = async (fileName: string) => {
     setAnalyzing(true);
     setResult(null);
-    const res = await farmerService.simulateAIGrading(cropName, fileName);
+    const res = await farmerService.gradeProduce(cropName);
     setResult(res);
     setAnalyzing(false);
   };

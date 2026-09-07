@@ -1,17 +1,40 @@
-import { LogisticsFleetVehicle, ConsolidatedTrip } from '@/types/logistics';
-import { mockFleetVehicles, mockConsolidatedTrips } from './mockData/mockLogisticsData';
+﻿import { LogisticsFleetVehicle, ConsolidatedTrip } from '@/types/logistics';
+import { apiClient } from '@/lib/apiClient';
 
 export const logisticsService = {
-  getFleet(): Promise<LogisticsFleetVehicle[]> {
-    return Promise.resolve(mockFleetVehicles);
+  async getFleet(): Promise<LogisticsFleetVehicle[]> {
+    try {
+      return await apiClient<LogisticsFleetVehicle[]>('/api/logistics/fleet', { method: 'GET' });
+    } catch {
+      return [];
+    }
   },
 
-  getTrips(): Promise<ConsolidatedTrip[]> {
-    return Promise.resolve(mockConsolidatedTrips);
+  async getTrips(): Promise<ConsolidatedTrip[]> {
+    try {
+      return await apiClient<ConsolidatedTrip[]>('/api/logistics/trips', { method: 'GET' });
+    } catch {
+      return [];
+    }
   },
 
-  getTripById(id: string): Promise<ConsolidatedTrip | null> {
-    const trip = mockConsolidatedTrips.find(t => t.id === id || t.tripCode === id) || null;
-    return Promise.resolve(trip);
+  async getTripById(id: string): Promise<ConsolidatedTrip | null> {
+    try {
+      return await apiClient<ConsolidatedTrip>(`/api/logistics/trips/${id}`, { method: 'GET' });
+    } catch {
+      return null;
+    }
+  },
+
+  async acceptReturnLoad(tripId: string, returnLoadId: string): Promise<boolean> {
+    try {
+      await apiClient(`/api/logistics/trips/${tripId}/return-load`, {
+        method: 'POST',
+        body: JSON.stringify({ returnLoadId }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 };

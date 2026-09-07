@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -36,8 +36,9 @@ export default function ConsumerLayout({ children }: { children: React.ReactNode
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    const items = consumerService.getCart();
-    setCartCount(items.reduce((acc, c) => acc + (c.quantityKg > 0 ? 1 : 0), 0));
+    consumerService.getCart().then((items) => {
+      setCartCount(items.reduce((acc, c) => acc + (c.quantityKg > 0 ? 1 : 0), 0));
+    });
   }, [pathname]);
 
   const navItems = [
@@ -149,8 +150,8 @@ export default function ConsumerLayout({ children }: { children: React.ReactNode
                   B
                 </div>
                 <div className="text-left hidden md:block">
-                  <span className="text-xs font-bold block text-slate-800 dark:text-slate-200 truncate max-w-[110px]">FreshDirect</span>
-                  <span className="text-[10px] text-slate-400 block truncate max-w-[110px]">Hyderabad Hub</span>
+                  <span className="text-xs font-bold block text-slate-800 dark:text-slate-200 truncate max-w-[110px]">Buyer Account</span>
+                  <span className="text-[10px] text-slate-400 block truncate max-w-[110px]">Commercial Hub</span>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
@@ -158,8 +159,7 @@ export default function ConsumerLayout({ children }: { children: React.ReactNode
               {profileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95">
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 text-xs">
-                    <span className="font-bold text-slate-900 dark:text-white block truncate">FreshDirect Retail Consortium</span>
-                    <span className="text-[11px] text-slate-400 block truncate">buyer@freshdirect.in</span>
+                    <span className="font-bold text-slate-900 dark:text-white block truncate">Authenticated Buyer</span>
                   </div>
                   <Link
                     href="/consumer/marketplace"

@@ -1,13 +1,20 @@
-import { Order, RoadLogisticsTracking } from "@/types/farmer";
-import { mockOrders, mockTrackingDetails } from "./mockData/mockOrders";
+﻿import { Order, RoadLogisticsTracking } from "@/types/farmer";
+import { apiClient } from "@/lib/apiClient";
 
 export const trackingService = {
-  getOrders(): Promise<Order[]> {
-    return Promise.resolve(mockOrders);
+  async getOrders(): Promise<Order[]> {
+    try {
+      return await apiClient<Order[]>('/api/farmer/orders', { method: 'GET' });
+    } catch {
+      return [];
+    }
   },
 
-  getTrackingDetails(logisticsId: string): Promise<RoadLogisticsTracking | null> {
-    const data = mockTrackingDetails[logisticsId] || null;
-    return Promise.resolve(data);
+  async getTrackingDetails(logisticsId: string): Promise<RoadLogisticsTracking | null> {
+    try {
+      return await apiClient<RoadLogisticsTracking>(`/api/tracking/${logisticsId}`, { method: 'GET' });
+    } catch {
+      return null;
+    }
   }
 };

@@ -37,11 +37,15 @@ export default function FarmerProducePage() {
   const selectedCrop = watch('crop');
 
   useEffect(() => {
-    setProduceList(farmerService.getProduceList());
+    const fetchProduce = async () => {
+      const list = await farmerService.getProduceList();
+      setProduceList(list || []);
+    };
+    fetchProduce();
   }, []);
 
-  const onAddProduceSubmit = (data: ProduceFormData) => {
-    const created = farmerService.addProduce({
+  const onAddProduceSubmit = async (data: ProduceFormData) => {
+    await farmerService.addProduce({
       crop: data.crop,
       quantity: Number(data.quantity),
       unit: data.unit,
@@ -51,7 +55,8 @@ export default function FarmerProducePage() {
       location: data.location,
       notes: data.notes,
     });
-    setProduceList(farmerService.getProduceList());
+    const updated = await farmerService.getProduceList();
+    setProduceList(updated || []);
     setIsAddModalOpen(false);
     reset();
   };

@@ -1,64 +1,46 @@
-import { Produce, ProduceGrade, QualityGradeResult } from "@/types/farmer";
-import { initialProduceList } from "./mockData/mockProduce";
-
-const STORAGE_KEY = "agriflow_farmer_produce";
+﻿import { Produce, QualityGradeResult } from "@/types/farmer";
+import { apiClient } from "@/lib/apiClient";
 
 export const farmerService = {
-  getProduceList(): Produce[] {
-    if (typeof window === "undefined") return initialProduceList;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProduceList));
-      return initialProduceList;
-    }
+  async getProduceList(): Promise<Produce[]> {
     try {
-      return JSON.parse(stored);
+      return await apiClient<Produce[]>('/api/farmer/produce', { method: 'GET' });
     } catch {
-      return initialProduceList;
+      return [];
     }
   },
 
-  addProduce(item: Omit<Produce, "id" | "createdAt" | "status">): Produce {
-    const current = this.getProduceList();
-    const newProduce: Produce = {
-      ...item,
-      id: "prod-" + Math.random().toString(36).substring(2, 9),
-      status: "Active",
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [newProduce, ...current];
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    }
-    return newProduce;
-  },
-
-  updateProduceStatus(id: string, status: Produce["status"]): void {
-    const current = this.getProduceList();
-    const updated = current.map(p => p.id === id ? { ...p, status } : p);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  async addProduce(item: Omit<Produce, "id" | "createdAt" | "status">): Promise<Produce | null> {
+    try {
+      return await apiClient<Produce>('/api/farmer/produce', {
+        method: 'POST',
+        body: JSON.stringify(item),
+      });
+    } catch {
+      return null;
     }
   },
 
-  simulateAIGrading(cropName: string, fileName?: string): Promise<QualityGradeResult> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          grade: "A",
-          defectLevel: "Low",
-          visualQualityScore: 94,
-          colorScore: 96,
-          sizeConsistencyScore: 91,
-          surfaceDefectsScore: 95,
-          damageScore: 98,
-          freshnessScore: 93,
-          estimatedFairRealizationMin: 41.00,
-          estimatedFairRealizationMax: 44.00,
-          explanation: "Analyzed fruit pigmentation, symmetry, skin integrity, and ripeness index. High grade suitability for institutional direct procurement.",
-          disclaimer: "AI-assisted estimate. Final grade may require physical verification at collection hub.",
-        });
-      }, 1200);
-    });
+  async updateProduceStatus(id: string, status: Produce["status"]): Promise<boolean> {
+    try {
+      await apiClient(`/api/farmer/produce/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async gradeProduce(cropName: string, imageBase64?: string): Promise<QualityGradeResult | null> {
+    try {
+      return await apiClient<QualityGradeResult>('/api/farmer/grade', {
+        method: 'POST',
+        body: JSON.stringify({ cropName, imageBase64 }),
+      });
+    } catch {
+      return null;
+    }
   }
 };
