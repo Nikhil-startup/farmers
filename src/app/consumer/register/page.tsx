@@ -330,7 +330,7 @@ export default function ConsumerRegisterPage() {
 
             <div>
               <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                Preferred AI Produce Quality Grade
+                Preferred Produce Grade
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[

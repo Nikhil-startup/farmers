@@ -69,7 +69,7 @@ export default function ConsumerLoginPage() {
           Buyer Portal Login
         </h1>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Direct farm-gate access with escrow safety & AI grade verification
+          Direct farm-gate access with escrow safety & quality assurance
         </p>
       </div>
 

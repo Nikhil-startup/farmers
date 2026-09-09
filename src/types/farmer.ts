@@ -182,21 +182,6 @@ export interface Order {
   destinationCity: string;
 }
 
-export interface QualityGradeResult {
-  grade: ProduceGrade;
-  defectLevel: 'Low' | 'Medium' | 'High';
-  visualQualityScore: number;
-  colorScore: number;
-  sizeConsistencyScore: number;
-  surfaceDefectsScore: number;
-  damageScore: number;
-  freshnessScore: number;
-  estimatedFairRealizationMin: number;
-  estimatedFairRealizationMax: number;
-  explanation: string;
-  disclaimer: string;
-}
-
 export interface SIHScenarioData {
   commodity: string;
   buyerLocation: string;

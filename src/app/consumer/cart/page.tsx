@@ -42,7 +42,7 @@ export default function ConsumerCartPage() {
         </div>
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Your Sourcing Cart is Empty</h2>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Select fresh AI-graded produce directly from our partner FPOs and smallholder farmers.
+          Select fresh farm produce directly from our partner FPOs and smallholder farmers.
         </p>
         <Link
           href="/consumer/marketplace"

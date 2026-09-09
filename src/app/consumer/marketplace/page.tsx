@@ -93,7 +93,7 @@ export default function ConsumerMarketplacePage() {
             Produce Marketplace
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Browse verified AI-graded harvests with transparent road freight & direct farmer realizations
+            Browse verified farm harvests with transparent road freight & direct farmer realizations
           </p>
         </div>
 
