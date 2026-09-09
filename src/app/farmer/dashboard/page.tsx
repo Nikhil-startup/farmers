@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useI18n } from '@/context/I18nContext';
 import { farmerService } from '@/services/farmerService';
 import { trackingService } from '@/services/trackingService';
 import { aiService } from '@/services/aiService';
@@ -27,6 +28,7 @@ import { formatINR } from '@/lib/utils';
 
 export default function FarmerDashboard() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [produceList, setProduceList] = useState<Produce[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
@@ -43,8 +45,8 @@ export default function FarmerDashboard() {
       {/* 1. WELCOME HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
         <div>
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Farmer Command Center</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Namaste, {user?.name || 'Farmer'} 🌾</h1>
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">{t('farmerCommandCenter') || 'Farmer Command Center'}</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('namaste') || 'Namaste'}, {user?.name || 'Farmer'} 🌾</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {user?.farmName} • {user?.location}
           </p>
@@ -53,7 +55,7 @@ export default function FarmerDashboard() {
           <Link href="/farmer/analytics">
             <Button variant="outline" size="sm" className="font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40">
               <BarChart3 className="w-4 h-4 mr-1.5 text-emerald-500" />
-              <span>View Analytics</span>
+              <span>{t('viewAnalytics') || 'View Analytics'}</span>
             </Button>
           </Link>
         </div>
@@ -67,7 +69,7 @@ export default function FarmerDashboard() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">High Opportunity</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">{t('highOpportunity') || 'High Opportunity'}</span>
               <span className="text-xs font-bold text-emerald-300">Hyderabad Urban Corridor</span>
             </div>
             <h2 className="text-lg font-bold text-white mt-1">Tomato demand is 18% above local supply (1,800 kg deficit)</h2>
@@ -76,7 +78,7 @@ export default function FarmerDashboard() {
         </div>
         <Link href="/farmer/recommendations" className="w-full sm:w-auto">
           <Button variant="primary" size="sm" className="w-full sm:w-auto flex-shrink-0">
-            <span>View Opportunity</span>
+            <span>{t('viewOpportunity') || 'View Opportunity'}</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </Link>
@@ -84,30 +86,30 @@ export default function FarmerDashboard() {
 
       {/* 3. QUICK ACTIONS */}
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('quickActions') || 'Quick Actions'}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Link href="/farmer/produce" className="block">
             <div className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-md transition transform active:scale-95 h-28">
               <Plus className="w-7 h-7 mb-1.5" />
-              <span className="font-bold text-sm">Add Produce</span>
+              <span className="font-bold text-sm">{t('addProduce') || '+ Add Produce'}</span>
             </div>
           </Link>
           <Link href="/farmer/market-prices" className="block">
             <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
               <TrendingUp className="w-7 h-7 mb-1.5 text-emerald-400" />
-              <span className="font-bold text-sm">Mandi Prices</span>
+              <span className="font-bold text-sm">{t('mandiPrices') || 'Mandi Prices'}</span>
             </div>
           </Link>
           <Link href="/farmer/demand-map" className="block">
             <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
               <MapPin className="w-7 h-7 mb-1.5 text-blue-400" />
-              <span className="font-bold text-sm">Demand Map</span>
+              <span className="font-bold text-sm">{t('demandMap') || 'Demand Map'}</span>
             </div>
           </Link>
           <Link href="/farmer/recommendations" className="block">
             <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
               <Sparkles className="w-7 h-7 mb-1.5 text-amber-400" />
-              <span className="font-bold text-sm">AI Advice</span>
+              <span className="font-bold text-sm">{t('aiRecommendations') || 'AI Advice'}</span>
             </div>
           </Link>
         </div>

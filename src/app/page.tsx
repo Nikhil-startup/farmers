@@ -15,6 +15,7 @@ import {
   Layers,
   ThermometerSnowflake
 } from 'lucide-react';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { mockConsumerProducts } from '@/services/mockData/mockConsumerData';
 
 export default function CombinedMainHub() {
@@ -51,6 +52,8 @@ export default function CombinedMainHub() {
           <Link href="/logistics" className="text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1">
             <Truck className="w-3 h-3" /> Cold Chain Fleet
           </Link>
+          <span className="text-slate-700">|</span>
+          <LanguageSelector variant="compact" />
         </div>
       </div>
 
