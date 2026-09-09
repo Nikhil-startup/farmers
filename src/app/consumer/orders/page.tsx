@@ -7,6 +7,9 @@ import { ConsumerOrder } from '@/types/consumer';
 import { useI18n } from '@/context/I18nContext';
 import MultiFarmerConsolidationCard from '@/components/consumer/MultiFarmerConsolidationCard';
 import ImpactReceiptModal from '@/components/consumer/ImpactReceiptModal';
+import RateAndReviewModal from '@/components/reviews/RateAndReviewModal';
+import ReportModal from '@/components/reports/ReportModal';
+import { UserRole, ReportType } from '@/types/review';
 import { 
   Package, 
   Truck, 
@@ -19,7 +22,8 @@ import {
   Users, 
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Flag
 } from 'lucide-react';
 
 export default function ConsumerOrdersPage() {
@@ -29,6 +33,22 @@ export default function ConsumerOrdersPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>('ORD-HYD-5000');
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<ConsumerOrder | null>(null);
+
+  // Ratings & Reports Modal State
+  const [selectedRatingOrder, setSelectedRatingOrder] = useState<{
+    transactionId: string;
+    targetUserId: string;
+    targetRole: UserRole;
+    targetName: string;
+    productId?: string;
+    productName?: string;
+  } | null>(null);
+
+  const [selectedReportData, setSelectedReportData] = useState<{
+    reportType: ReportType;
+    transactionId?: string;
+    reportedName: string;
+  } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -259,16 +279,73 @@ export default function ConsumerOrdersPage() {
 
                     {/* Action Footers */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                      {order.impactReceipt && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {order.impactReceipt && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedReceiptOrder(order)}
+                            className="px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-200 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-emerald-500" />
+                            Receipt
+                          </button>
+                        )}
+
+                        {/* Verified Rating Action - Only if Delivered/Completed */}
+                        {order.status === 'Delivered' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedRatingOrder({
+                                  transactionId: order.id,
+                                  targetUserId: 'farmer_01',
+                                  targetRole: 'FARMER',
+                                  targetName: order.items[0]?.product.farmerStory.farmerName || 'Farmer',
+                                  productId: order.items[0]?.product.id,
+                                  productName: order.items[0]?.product.name,
+                                });
+                              }}
+                              className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                              Rate Farmer
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedRatingOrder({
+                                  transactionId: order.id,
+                                  targetUserId: 'logistics_01',
+                                  targetRole: 'LOGISTICS',
+                                  targetName: 'Reefer Express Carrier',
+                                });
+                              }}
+                              className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Truck className="w-3.5 h-3.5 text-cyan-500" />
+                              Rate Logistics
+                            </button>
+                          </>
+                        )}
+
+                        {/* Report Order / Incident */}
                         <button
                           type="button"
-                          onClick={() => setSelectedReceiptOrder(order)}
-                          className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-200 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                          onClick={() => {
+                            setSelectedReportData({
+                              reportType: 'ORDER',
+                              transactionId: order.id,
+                              reportedName: `Order #${order.id} (${order.items[0]?.product.name || 'Produce'})`,
+                            });
+                          }}
+                          className="p-2 rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                          title="Report order or merchant issue"
                         >
-                          <FileText className="w-4 h-4 text-emerald-500" />
-                          View Farmer Realization Receipt
+                          <Flag className="w-4 h-4" />
                         </button>
-                      )}
+                      </div>
 
                       <Link
                         href={`/consumer/tracking/${order.logisticsId || 'TRK-RD-701'}`}
@@ -283,6 +360,37 @@ export default function ConsumerOrdersPage() {
             );
           })}
         </div>
+      )}
+
+      {/* Rate and Review Modal */}
+      {selectedRatingOrder && (
+        <RateAndReviewModal
+          isOpen={true}
+          onClose={() => setSelectedRatingOrder(null)}
+          transactionId={selectedRatingOrder.transactionId}
+          targetUserId={selectedRatingOrder.targetUserId}
+          targetRole={selectedRatingOrder.targetRole}
+          targetName={selectedRatingOrder.targetName}
+          productId={selectedRatingOrder.productId}
+          productName={selectedRatingOrder.productName}
+          raterUserId="user_consumer_demo"
+          raterRole="BUYER"
+          raterDisplayName="Priya S. (Retail Buyer)"
+        />
+      )}
+
+      {/* Report Modal */}
+      {selectedReportData && (
+        <ReportModal
+          isOpen={true}
+          onClose={() => setSelectedReportData(null)}
+          reportType={selectedReportData.reportType}
+          transactionId={selectedReportData.transactionId}
+          reportedName={selectedReportData.reportedName}
+          reporterUserId="user_consumer_demo"
+          reporterRole="BUYER"
+          reporterDisplayName="Priya S. (Retail Buyer)"
+        />
       )}
 
       {/* Impact Receipt Modal */}

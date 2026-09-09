@@ -9,6 +9,8 @@ import { useCart } from '@/context/CartContext';
 import { useI18n } from '@/context/I18nContext';
 import KnowYourFarmerModal from '@/components/consumer/KnowYourFarmerModal';
 import PriceBreakdownCard from '@/components/consumer/PriceBreakdownCard';
+import ProductReviewsSection from '@/components/reviews/ProductReviewsSection';
+import ReportModal from '@/components/reports/ReportModal';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -22,7 +24,8 @@ import {
   Award, 
   Clock, 
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Flag
 } from 'lucide-react';
 
 export default function ProductDetailPage() {
@@ -36,6 +39,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdded, setIsAdded] = useState(false);
   const [showFarmerModal, setShowFarmerModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -335,9 +339,29 @@ export default function ProductDetailPage() {
                 Direct Sourcing Order
               </button>
             </div>
+
+            {/* Report Produce Listing */}
+            <div className="pt-2 text-right">
+              <button
+                type="button"
+                onClick={() => setShowReportModal(true)}
+                className="text-[11px] font-bold text-zinc-400 hover:text-rose-500 transition inline-flex items-center gap-1"
+              >
+                <Flag className="w-3 h-3" />
+                Report listing inaccuracy or quality issue
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Verified Product Reviews & Farmer Trust Ledger */}
+      <ProductReviewsSection
+        productId={product.id}
+        farmerId={product.farmerStory.id}
+        farmerName={product.farmerStory.farmerName}
+        productName={product.name}
+      />
 
       {/* Know Your Farmer Modal */}
       <KnowYourFarmerModal
@@ -345,6 +369,22 @@ export default function ProductDetailPage() {
         onClose={() => setShowFarmerModal(false)}
         farmerStory={product.farmerStory}
       />
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <ReportModal
+          isOpen={true}
+          onClose={() => setShowReportModal(false)}
+          reportType="PRODUCT"
+          productId={product.id}
+          reportedUserId={product.farmerStory.id}
+          reportedRole="FARMER"
+          reportedName={`${product.name} (by ${product.farmerStory.farmerName})`}
+          reporterUserId="user_consumer_demo"
+          reporterRole="BUYER"
+          reporterDisplayName="Verified Buyer"
+        />
+      )}
     </div>
   );
 }
