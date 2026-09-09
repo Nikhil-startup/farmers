@@ -50,7 +50,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
   ];
 
   // Route protection
-  const publicFarmerRoutes = ['/farmer', '/farmer/login', '/farmer/register'];
+  const publicFarmerRoutes = ['/farmer', '/farmer/login', '/farmer/register', '/farmer/complete-profile'];
   const isPublicRoute = publicFarmerRoutes.includes(pathname);
 
   // If user visits public farmer routes, do NOT render the authenticated navbar/layout wrapper
@@ -61,6 +61,12 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
   // Redirect to login if unauthenticated on protected routes
   if (!isLoading && !isAuthenticated) {
     router.push('/farmer/login');
+    return null;
+  }
+
+  // If authenticated but profile incomplete, redirect to complete-profile
+  if (!isLoading && isAuthenticated && user && user.profileCompleted === false && pathname !== '/farmer/complete-profile') {
+    router.push('/farmer/complete-profile');
     return null;
   }
 

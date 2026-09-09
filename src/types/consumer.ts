@@ -12,11 +12,14 @@ export interface ConsumerUser {
   name: string;
   phone: string;
   email: string;
+  photoURL?: string;
   role: 'consumer';
+  address?: string;
   state?: string;
   district?: string;
   place?: string;
   preferredLanguage?: SupportedLanguage;
+  profileCompleted?: boolean;
   location: string;
   buyerType: BuyerType;
   preferredProduce?: string[];

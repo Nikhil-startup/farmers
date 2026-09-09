@@ -37,15 +37,17 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
     { href: '/logistics/telemetry', label: t('reeferTelemetry') || 'Reefer Telemetry', icon: ThermometerSnowflake },
   ];
 
-  const publicRoutes = ['/logistics', '/logistics/login', '/logistics/register'];
+  const publicRoutes = ['/logistics', '/logistics/login', '/logistics/register', '/logistics/complete-profile'];
   const isPublic = publicRoutes.includes(pathname);
 
   React.useEffect(() => {
     if (!isPublic && !logisticsUser) {
       // If unauthenticated on protected logistics routes, redirect to login
       window.location.href = '/logistics/login';
+    } else if (logisticsUser && logisticsUser.profileCompleted === false && pathname !== '/logistics/complete-profile') {
+      window.location.href = '/logistics/complete-profile';
     }
-  }, [isPublic, logisticsUser]);
+  }, [isPublic, logisticsUser, pathname]);
 
   if (isPublic) {
     return <>{children}</>;

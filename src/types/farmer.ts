@@ -10,11 +10,14 @@ export interface User {
   name: string;
   phone: string;
   email?: string;
+  photoURL?: string;
   role: 'farmer' | 'consumer' | 'logistics' | 'fpo';
+  address?: string;
   state?: string;
   district?: string;
   place?: string;
   preferredLanguage?: SupportedLanguage;
+  profileCompleted?: boolean;
   location?: string;
   farmName?: string;
   farmerType?: 'Individual Farmer' | 'FPO' | 'Farmer Group';

@@ -55,6 +55,19 @@ export const logisticsRegisterSchema = z.object({
 
 export type LogisticsRegisterFormData = z.infer<typeof logisticsRegisterSchema>;
 
+export const completeProfileSchema = z.object({
+  fullName: z.string().min(2, "Full Name is required"),
+  phone: z.string().min(10, "Valid 10-digit phone number is required").or(z.literal("")),
+  email: z.string().email("Valid email address is required").or(z.literal("")),
+  address: z.string().min(3, "Address is required"),
+  state: z.string().min(2, "State is required"),
+  district: z.string().min(2, "District is required"),
+  place: z.string().min(2, "Place / Village / Town is required"),
+  preferredLanguage: supportedLanguagesEnum,
+});
+
+export type CompleteProfileFormData = z.infer<typeof completeProfileSchema>;
+
 export const produceSchema = z.object({
   crop: z.string().min(2, "Produce/crop name is required"),
   quantity: z.number().positive("Quantity must be greater than 0"),

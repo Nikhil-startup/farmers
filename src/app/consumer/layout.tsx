@@ -36,13 +36,15 @@ export default function ConsumerLayout({
   const { t, language, setLanguage } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isPublicPage = pathname === '/consumer' || pathname === '/consumer/login' || pathname === '/consumer/register' || pathname === '/consumer/marketplace' || pathname.startsWith('/consumer/product') || pathname === '/consumer/cart' || pathname.startsWith('/consumer/tracking');
+  const isPublicPage = pathname === '/consumer' || pathname === '/consumer/login' || pathname === '/consumer/register' || pathname === '/consumer/complete-profile' || pathname === '/consumer/marketplace' || pathname.startsWith('/consumer/product') || pathname === '/consumer/cart' || pathname.startsWith('/consumer/tracking');
 
   useEffect(() => {
     if (!isPublicPage && !isConsumerAuthenticated) {
       router.push('/consumer/login');
+    } else if (isConsumerAuthenticated && consumerUser && consumerUser.profileCompleted === false && pathname !== '/consumer/complete-profile') {
+      router.push('/consumer/complete-profile');
     }
-  }, [isPublicPage, isConsumerAuthenticated, router]);
+  }, [isPublicPage, isConsumerAuthenticated, consumerUser, pathname, router]);
 
   const navLinks = [
     { href: '/consumer/dashboard', label: t('dashboard'), icon: LayoutDashboard, authRequired: true },

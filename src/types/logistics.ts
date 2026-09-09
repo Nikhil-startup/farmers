@@ -7,11 +7,14 @@ export interface LogisticsOperator {
   name: string;
   phone: string;
   email: string;
+  photoURL?: string;
   role: 'logistics';
+  address?: string;
   state?: string;
   district?: string;
   place?: string;
   preferredLanguage?: SupportedLanguage;
+  profileCompleted?: boolean;
   vehicleType: RoadVehicleType;
   vehicleNumber: string;
   vehicleCapacityKg: number;

@@ -46,7 +46,7 @@ interface AuthContextType {
     role: 'farmer' | 'consumer' | 'logistics' | 'fpo',
     extraData?: { name?: string; phone?: string }
   ) => Promise<void>;
-  loginWithGoogle: (role: 'farmer' | 'consumer' | 'logistics' | 'fpo') => Promise<void>;
+  loginWithGoogle: (role: 'farmer' | 'consumer' | 'logistics' | 'fpo') => Promise<{ profileCompleted: boolean }>;
   loginWithDemo: (role: string, name?: string, phone?: string) => Promise<void>;
 }
 
@@ -573,16 +573,135 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async (role: 'farmer' | 'consumer' | 'logistics' | 'fpo'): Promise<void> => {
+  const loginWithGoogle = async (role: 'farmer' | 'consumer' | 'logistics' | 'fpo'): Promise<{ profileCompleted: boolean }> => {
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const gUser = result.user;
-      await loginWithDemo(role, gUser.displayName || undefined, gUser.email || undefined);
+
+      // Try backend check
+      try {
+        const token = await gUser.getIdToken();
+        sessionStorage.setItem('agriflow_auth_token', token);
+        const profile = await apiClient<{
+          id: string;
+          name: string;
+          role: 'farmer' | 'consumer' | 'logistics' | 'fpo';
+          state?: string;
+          district?: string;
+          place?: string;
+          address?: string;
+          preferredLanguage?: any;
+          profileCompleted?: boolean;
+        }>('/api/auth/me');
+
+        if (profile && profile.profileCompleted) {
+          await refreshUserProfile();
+          return { profileCompleted: true };
+        }
+      } catch {
+        // Backend offline / new user
+      }
+
+      // New Google User: Store initial draft in session without profileCompleted
+      if (role === 'farmer' || role === 'fpo') {
+        const newGoogleFarmer: FarmerUser = {
+          id: 'farmer-' + gUser.uid.substring(0, 8),
+          name: gUser.displayName || 'Google Farmer',
+          email: gUser.email || '',
+          phone: gUser.phoneNumber || '',
+          photoURL: gUser.photoURL || undefined,
+          role: 'farmer',
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setUser(newGoogleFarmer);
+        sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(newGoogleFarmer));
+      } else if (role === 'consumer') {
+        const newGoogleConsumer: ConsumerUser = {
+          id: 'consumer-' + gUser.uid.substring(0, 8),
+          name: gUser.displayName || 'Google Buyer',
+          email: gUser.email || '',
+          phone: gUser.phoneNumber || '',
+          photoURL: gUser.photoURL || undefined,
+          role: 'consumer',
+          location: '',
+          buyerType: 'household',
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setConsumerUser(newGoogleConsumer);
+        sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(newGoogleConsumer));
+      } else if (role === 'logistics') {
+        const newGoogleLogistics: LogisticsOperator = {
+          id: 'logistics-' + gUser.uid.substring(0, 8),
+          name: gUser.displayName || 'Google Logistics Fleet',
+          email: gUser.email || '',
+          phone: gUser.phoneNumber || '',
+          photoURL: gUser.photoURL || undefined,
+          role: 'logistics',
+          vehicleType: 'Tata 407 Reefer',
+          vehicleNumber: '',
+          vehicleCapacityKg: 2500,
+          reeferEnabled: true,
+          operatingRegion: '',
+          preferredRoutes: [],
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setLogisticsUser(newGoogleLogistics);
+        sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(newGoogleLogistics));
+      }
+      return { profileCompleted: false };
     } catch (error) {
-      console.warn('Google popup error, falling back to instant login:', error);
-      await loginWithDemo(role);
+      console.warn('Google popup error, falling back to simulated new user:', error);
+      if (role === 'farmer' || role === 'fpo') {
+        const newGoogleFarmer: FarmerUser = {
+          id: 'farmer-google-' + Date.now().toString(36),
+          name: 'Kisan Google User',
+          email: 'farmer@gmail.com',
+          phone: '',
+          role: 'farmer',
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setUser(newGoogleFarmer);
+        sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(newGoogleFarmer));
+      } else if (role === 'consumer') {
+        const newGoogleConsumer: ConsumerUser = {
+          id: 'consumer-google-' + Date.now().toString(36),
+          name: 'Consumer Google User',
+          email: 'buyer@gmail.com',
+          phone: '',
+          role: 'consumer',
+          location: '',
+          buyerType: 'household',
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setConsumerUser(newGoogleConsumer);
+        sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(newGoogleConsumer));
+      } else if (role === 'logistics') {
+        const newGoogleLogistics: LogisticsOperator = {
+          id: 'logistics-google-' + Date.now().toString(36),
+          name: 'Logistics Google User',
+          email: 'fleet@gmail.com',
+          phone: '',
+          role: 'logistics',
+          vehicleType: 'Tata 407 Reefer',
+          vehicleNumber: '',
+          vehicleCapacityKg: 2500,
+          reeferEnabled: true,
+          operatingRegion: '',
+          preferredRoutes: [],
+          profileCompleted: false,
+          createdAt: new Date().toISOString(),
+        };
+        setLogisticsUser(newGoogleLogistics);
+        sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(newGoogleLogistics));
+      }
+      return { profileCompleted: false };
     } finally {
       setIsLoading(false);
     }

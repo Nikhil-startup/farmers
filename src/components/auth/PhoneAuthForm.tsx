@@ -138,10 +138,20 @@ export function PhoneAuthForm({
   // Google (Gmail) Sign-In
   const handleGoogleLogin = async () => {
     setErrorMsg('');
+    setStatusMsg('Signing in with Google...');
     setSubmitting(true);
     try {
-      await loginWithGoogle(role);
-      router.push(redirectUrl);
+      const res = await loginWithGoogle(role);
+      if (res.profileCompleted) {
+        router.push(redirectUrl);
+      } else {
+        const completeRoute = role === 'farmer' || role === 'fpo' 
+          ? '/farmer/complete-profile' 
+          : role === 'consumer' 
+          ? '/consumer/complete-profile' 
+          : '/logistics/complete-profile';
+        router.push(completeRoute);
+      }
     } catch (err: unknown) {
       const error = err as { code?: string; message?: string };
       console.error('Google Sign-In Error:', error);
@@ -150,6 +160,7 @@ export function PhoneAuthForm({
       }
     } finally {
       setSubmitting(false);
+      setStatusMsg('');
     }
   };
 
