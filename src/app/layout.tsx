@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
@@ -7,6 +7,7 @@ import { BandwidthProvider } from "@/context/BandwidthContext";
 import { I18nProvider } from "@/context/I18nContext";
 import { CartProvider } from "@/context/CartContext";
 import { TrackingProvider } from "@/context/TrackingContext";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
             </I18nProvider>
           </BandwidthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
