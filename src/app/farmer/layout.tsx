@@ -74,20 +74,20 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       
       {/* Top Demo Bar */}
-      <div className="bg-emerald-900 text-emerald-100 text-[11px] font-semibold py-1.5 px-4 flex flex-wrap items-center justify-between gap-2 border-b border-emerald-800">
-        <div className="flex items-center gap-2">
+      <div className="bg-emerald-900 text-emerald-100 text-[11px] font-semibold py-1.5 px-3 sm:px-4 flex flex-wrap items-center justify-between gap-2 border-b border-emerald-800">
+        <div className="flex items-center gap-1.5 min-w-0">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-          <span className="truncate">AgriFlow AI • Dedicated Farmer & FPO Experience</span>
+          <span className="truncate font-bold">AgriFlow Farmer & FPO</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/" className="hover:text-white flex items-center gap-1 font-bold text-xs">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+          <Link href="/" className="hover:text-white font-bold text-xs">
             Gateway
           </Link>
           <Link href="/consumer" className="hover:text-white text-blue-300 font-bold text-xs">
-            🛒 Buyer Portal
+            🛒 Buyer
           </Link>
           <Link href="/logistics" className="hover:text-white text-amber-300 font-bold text-xs">
-            🚚 Logistics Portal
+            🚚 Fleet
           </Link>
           <LowBandwidthToggle />
           <LanguageSelector variant="compact" />
@@ -95,19 +95,19 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
       </div>
 
       {/* Main Authenticated Header */}
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-3">
           
           {/* Logo */}
-          <Link href="/farmer/dashboard" className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-lg shrink-0 shadow-md shadow-emerald-600/30">
-              🌾
+          <Link href="/farmer/dashboard" className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-600/30">
+              <Sprout className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight truncate block">
+              <span className="font-extrabold text-sm sm:text-base md:text-lg text-slate-900 dark:text-white tracking-tight truncate block">
                 AgriFlow <span className="text-emerald-500">Farmer</span>
               </span>
-              <span className="text-[10px] block font-medium text-slate-400 truncate hidden sm:block">
+              <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 truncate hidden sm:block">
                 Direct Demand & Logistics
               </span>
             </div>

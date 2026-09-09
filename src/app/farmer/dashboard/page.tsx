@@ -46,9 +46,12 @@ export default function FarmerDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
         <div>
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">{t('farmerCommandCenter') || 'Farmer Command Center'}</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('namaste') || 'Namaste'}, {user?.name || 'Farmer'} 🌾</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <span>{t('namaste') || 'Namaste'}, {user?.name || 'Farmer'}</span>
+            <Sprout className="w-6 h-6 text-emerald-500 shrink-0" />
+          </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {user?.farmName} • {user?.location}
+            {user?.farmName ? `${user.farmName} • ` : ''}{user?.location || 'Direct Farm'}
           </p>
         </div>
         <div>
@@ -61,11 +64,11 @@ export default function FarmerDashboard() {
         </div>
       </div>
 
-      {/* 2. IMPORTANT OPPORTUNITY / ALERT */}
+      {/* 2. REAL-TIME AI DEMAND ALERT */}
       <div className="bg-gradient-to-r from-emerald-900/80 to-slate-900 border-2 border-emerald-500/60 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-emerald-950/20">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-2xl flex-shrink-0">
-            🚨
+            <Sparkles className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgriFlow Buyer — Direct Marketplace & Produce Procurement",
+  title: "AgriFlow AI — Dedicated Agricultural Demand, Pooling & Logistics",
   description: "Direct farm produce marketplace, bulk demand pooling, and verified cold-chain logistics tracking.",
 };
 
@@ -35,6 +35,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         <ThemeProvider>
           <BandwidthProvider>
