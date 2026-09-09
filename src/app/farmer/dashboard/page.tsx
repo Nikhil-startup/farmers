@@ -44,9 +44,9 @@ export default function FarmerDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
         <div>
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Farmer Command Center</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Namaste, {user?.name || 'Farmer'} ðŸŒ¾</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Namaste, {user?.name || 'Farmer'} 🌾</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {user?.farmName} â€¢ {user?.location}
+            {user?.farmName} • {user?.location}
           </p>
         </div>
         <div>
@@ -63,7 +63,7 @@ export default function FarmerDashboard() {
       <div className="bg-gradient-to-r from-emerald-900/80 to-slate-900 border-2 border-emerald-500/60 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-emerald-950/20">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-2xl flex-shrink-0">
-            ðŸš¨
+            🚨
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export default function FarmerDashboard() {
               <span className="text-xs font-bold text-emerald-300">Hyderabad Urban Corridor</span>
             </div>
             <h2 className="text-lg font-bold text-white mt-1">Tomato demand is 18% above local supply (1,800 kg deficit)</h2>
-            <p className="text-xs text-slate-300">Bowenpally direct buyer offering <strong>â‚¹42.00/kg</strong> vs current mandi â‚¹38.00/kg.</p>
+            <p className="text-xs text-slate-300">Bowenpally direct buyer offering <strong>₹42.00/kg</strong> vs current mandi ₹38.00/kg.</p>
           </div>
         </div>
         <Link href="/farmer/recommendations" className="w-full sm:w-auto">
@@ -171,7 +171,7 @@ export default function FarmerDashboard() {
             </div>
           </div>
           <Link href="/farmer/produce" className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-            View All ({produceList.length}) â†’
+            View All ({produceList.length}) →
           </Link>
         </div>
 

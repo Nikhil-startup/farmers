@@ -272,7 +272,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        <p>Â© 2026 AgriFlow AI â€” Dedicated Farmer & FPO Experience â€¢ Road Logistics Only â€¢ Verified Cold-Chain Telemetry</p>
+        <p>© 2026 AgriFlow AI — Dedicated Farmer & FPO Experience • Road Logistics Only • Verified Cold-Chain Telemetry</p>
       </footer>
     </div>
   );
