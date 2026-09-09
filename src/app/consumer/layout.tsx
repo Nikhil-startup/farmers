@@ -7,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useI18n } from '@/context/I18nContext';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { LowBandwidthToggle } from '@/components/common/LowBandwidthToggle';
+import { ConnectionIndicator } from '@/components/common/ConnectionIndicator';
 import { 
   Store, 
   LayoutDashboard, 
@@ -72,6 +74,8 @@ export default function ConsumerLayout({
         </div>
 
         <div className="flex items-center gap-3 text-xs">
+          <ConnectionIndicator />
+          <LowBandwidthToggle />
           <LanguageSelector variant="compact" />
           <span className="text-emerald-700">|</span>
           <Link

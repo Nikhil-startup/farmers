@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useI18n } from '@/context/I18nContext';
 import { LowBandwidthToggle } from '@/components/common/LowBandwidthToggle';
+import { ConnectionIndicator } from '@/components/common/ConnectionIndicator';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import {
   LayoutDashboard,
@@ -80,6 +81,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
           <span className="truncate font-bold">AgriFlow Farmer & FPO</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+          <ConnectionIndicator />
           <Link href="/" className="hover:text-white font-bold text-xs">
             Gateway
           </Link>

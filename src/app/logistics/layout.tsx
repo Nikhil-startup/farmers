@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 
 import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { LowBandwidthToggle } from '@/components/common/LowBandwidthToggle';
+import { ConnectionIndicator } from '@/components/common/ConnectionIndicator';
 import { useI18n } from '@/context/I18nContext';
 import { useAuth } from '@/context/AuthContext';
 
@@ -68,6 +70,8 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
           <span className="hidden md:inline text-slate-500">• Telemetry & Return-Haul Optimization</span>
         </div>
         <div className="flex items-center gap-3">
+          <ConnectionIndicator />
+          <LowBandwidthToggle />
           <Link href="/" className="hover:text-slate-200 transition flex items-center gap-1">
             <ArrowLeft className="w-3 h-3" /> Home Hub
           </Link>
