@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -36,7 +36,13 @@ export default function ConsumerLayout({
   const { t, language, setLanguage } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isPublicPage = pathname === '/consumer' || pathname === '/consumer/login' || pathname === '/consumer/register';
+  const isPublicPage = pathname === '/consumer' || pathname === '/consumer/login' || pathname === '/consumer/register' || pathname === '/consumer/marketplace' || pathname.startsWith('/consumer/product') || pathname === '/consumer/cart' || pathname.startsWith('/consumer/tracking');
+
+  useEffect(() => {
+    if (!isPublicPage && !isConsumerAuthenticated) {
+      router.push('/consumer/login');
+    }
+  }, [isPublicPage, isConsumerAuthenticated, router]);
 
   const navLinks = [
     { href: '/consumer/dashboard', label: t('dashboard'), icon: LayoutDashboard, authRequired: true },

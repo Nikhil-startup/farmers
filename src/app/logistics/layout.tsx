@@ -40,8 +40,19 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
   const publicRoutes = ['/logistics', '/logistics/login', '/logistics/register'];
   const isPublic = publicRoutes.includes(pathname);
 
+  React.useEffect(() => {
+    if (!isPublic && !logisticsUser) {
+      // If unauthenticated on protected logistics routes, redirect to login
+      window.location.href = '/logistics/login';
+    }
+  }, [isPublic, logisticsUser]);
+
   if (isPublic) {
     return <>{children}</>;
+  }
+
+  if (!logisticsUser) {
+    return null;
   }
 
   return (

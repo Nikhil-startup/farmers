@@ -60,19 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Restore session from localStorage if present as temporary fast cache
+    // Restore session from sessionStorage if tab is active; closing the browser resets session
     if (typeof window !== 'undefined') {
-      const storedFarmer = localStorage.getItem('agriflow_farmer_auth');
+      const storedFarmer = sessionStorage.getItem('agriflow_farmer_auth');
       if (storedFarmer) {
         try { setUser(JSON.parse(storedFarmer)); } catch { setUser(null); }
       }
 
-      const storedConsumer = localStorage.getItem('agriflow_consumer_auth');
+      const storedConsumer = sessionStorage.getItem('agriflow_consumer_auth');
       if (storedConsumer) {
         try { setConsumerUser(JSON.parse(storedConsumer)); } catch { setConsumerUser(null); }
       }
 
-      const storedLogistics = localStorage.getItem('agriflow_logistics_auth');
+      const storedLogistics = sessionStorage.getItem('agriflow_logistics_auth');
       if (storedLogistics) {
         try { setLogisticsUser(JSON.parse(storedLogistics)); } catch { setLogisticsUser(null); }
       }
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Source of Truth: GET /api/auth/me to sync preferredLanguage and locations
   const refreshUserProfile = async () => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('agriflow_auth_token') : null;
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('agriflow_auth_token') : null;
       if (!token) return;
 
       const profile = await apiClient<{
@@ -124,9 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             farmerType: 'FPO',
           };
           setUser(updatedFarmer);
-          localStorage.setItem('agriflow_farmer_auth', JSON.stringify(updatedFarmer));
+          sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(updatedFarmer));
           if (profile.preferredLanguage) {
-            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+            sessionStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
           }
         } else if (profile.role === 'consumer') {
           const updatedConsumer: ConsumerUser = {
@@ -144,9 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             createdAt: new Date().toISOString(),
           };
           setConsumerUser(updatedConsumer);
-          localStorage.setItem('agriflow_consumer_auth', JSON.stringify(updatedConsumer));
+          sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(updatedConsumer));
           if (profile.preferredLanguage) {
-            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+            sessionStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
           }
         } else if (profile.role === 'logistics') {
           const updatedLogistics: LogisticsOperator = {
@@ -168,9 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             createdAt: new Date().toISOString(),
           };
           setLogisticsUser(updatedLogistics);
-          localStorage.setItem('agriflow_logistics_auth', JSON.stringify(updatedLogistics));
+          sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(updatedLogistics));
           if (profile.preferredLanguage) {
-            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+            sessionStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
           }
         }
       }
@@ -187,11 +187,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ identifier, password: pass }),
       });
       setUser(res.user);
-      localStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const fallbackUser: FarmerUser = {
@@ -210,8 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setUser(fallbackUser);
-      localStorage.setItem('agriflow_farmer_auth', JSON.stringify(fallbackUser));
-      localStorage.setItem('agriflow_cached_lang', 'te');
+      sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(fallbackUser));
+      sessionStorage.setItem('agriflow_cached_lang', 'te');
       return true;
     } finally {
       setIsLoading(false);
@@ -226,11 +226,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data),
       });
       setUser(res.user);
-      localStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const newUser: FarmerUser = {
@@ -251,9 +251,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setUser(newUser);
-      localStorage.setItem('agriflow_farmer_auth', JSON.stringify(newUser));
+      sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(newUser));
       if (newUser.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', newUser.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', newUser.preferredLanguage);
       }
       return true;
     } finally {
@@ -273,9 +273,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Offline / fallback persistence
     }
     setUser(updated);
-    localStorage.setItem('agriflow_farmer_auth', JSON.stringify(updated));
+    sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(updated));
     if (data.preferredLanguage) {
-      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+      sessionStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
     }
     return true;
   };
@@ -292,9 +292,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     setUser(null);
-    localStorage.removeItem('agriflow_farmer_auth');
-    localStorage.removeItem('agriflow_auth_token');
-    localStorage.removeItem('agriflow_cached_lang');
+    sessionStorage.removeItem('agriflow_farmer_auth');
+    sessionStorage.removeItem('agriflow_auth_token');
+    sessionStorage.removeItem('agriflow_cached_lang');
     router.push('/farmer');
   };
 
@@ -306,11 +306,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ identifier, password: pass }),
       });
       setConsumerUser(res.user);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const active: ConsumerUser = {
@@ -328,8 +328,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(active);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(active));
-      localStorage.setItem('agriflow_cached_lang', 'ta');
+      sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(active));
+      sessionStorage.setItem('agriflow_cached_lang', 'ta');
       return true;
     } finally {
       setIsLoading(false);
@@ -344,11 +344,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data),
       });
       setConsumerUser(res.user);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const newConsumer: ConsumerUser = {
@@ -367,9 +367,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(newConsumer);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(newConsumer));
+      sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(newConsumer));
       if (newConsumer.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', newConsumer.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', newConsumer.preferredLanguage);
       }
       return true;
     } finally {
@@ -389,9 +389,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Offline / fallback persistence
     }
     setConsumerUser(updated);
-    localStorage.setItem('agriflow_consumer_auth', JSON.stringify(updated));
+    sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(updated));
     if (data.preferredLanguage) {
-      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+      sessionStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
     }
     return true;
   };
@@ -402,9 +402,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutConsumer = () => {
     setConsumerUser(null);
-    localStorage.removeItem('agriflow_consumer_auth');
-    localStorage.removeItem('agriflow_auth_token');
-    localStorage.removeItem('agriflow_cached_lang');
+    sessionStorage.removeItem('agriflow_consumer_auth');
+    sessionStorage.removeItem('agriflow_auth_token');
+    sessionStorage.removeItem('agriflow_cached_lang');
     router.push('/consumer');
   };
 
@@ -416,11 +416,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ identifier, password: pass }),
       });
       setLogisticsUser(res.user);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const active: LogisticsOperator = {
@@ -442,8 +442,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setLogisticsUser(active);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(active));
-      localStorage.setItem('agriflow_cached_lang', 'hi');
+      sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(active));
+      sessionStorage.setItem('agriflow_cached_lang', 'hi');
       return true;
     } finally {
       setIsLoading(false);
@@ -458,11 +458,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data),
       });
       setLogisticsUser(res.user);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
+      sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
       if (res.user.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
       }
-      if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
+      if (res.token) sessionStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
       const newOp: LogisticsOperator = {
@@ -484,9 +484,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setLogisticsUser(newOp);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(newOp));
+      sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(newOp));
       if (newOp.preferredLanguage) {
-        localStorage.setItem('agriflow_cached_lang', newOp.preferredLanguage);
+        sessionStorage.setItem('agriflow_cached_lang', newOp.preferredLanguage);
       }
       return true;
     } finally {
@@ -506,9 +506,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Offline / fallback persistence
     }
     setLogisticsUser(updated);
-    localStorage.setItem('agriflow_logistics_auth', JSON.stringify(updated));
+    sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(updated));
     if (data.preferredLanguage) {
-      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+      sessionStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
     }
     return true;
   };
@@ -519,9 +519,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutLogistics = () => {
     setLogisticsUser(null);
-    localStorage.removeItem('agriflow_logistics_auth');
-    localStorage.removeItem('agriflow_auth_token');
-    localStorage.removeItem('agriflow_cached_lang');
+    sessionStorage.removeItem('agriflow_logistics_auth');
+    sessionStorage.removeItem('agriflow_auth_token');
+    sessionStorage.removeItem('agriflow_cached_lang');
     router.push('/logistics');
   };
 
@@ -607,8 +607,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setUser(demoFarmer);
-      localStorage.setItem('agriflow_farmer_auth', JSON.stringify(demoFarmer));
-      localStorage.setItem('agriflow_cached_lang', 'te');
+      sessionStorage.setItem('agriflow_farmer_auth', JSON.stringify(demoFarmer));
+      sessionStorage.setItem('agriflow_cached_lang', 'te');
     } else if (role === 'consumer') {
       const demoConsumer: ConsumerUser = {
         id: 'consumer-001',
@@ -625,8 +625,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(demoConsumer);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(demoConsumer));
-      localStorage.setItem('agriflow_cached_lang', 'ta');
+      sessionStorage.setItem('agriflow_consumer_auth', JSON.stringify(demoConsumer));
+      sessionStorage.setItem('agriflow_cached_lang', 'ta');
     } else if (role === 'logistics') {
       const demoLogistics: LogisticsOperator = {
         id: 'logistics-001',
@@ -647,8 +647,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
       };
       setLogisticsUser(demoLogistics);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(demoLogistics));
-      localStorage.setItem('agriflow_cached_lang', 'hi');
+      sessionStorage.setItem('agriflow_logistics_auth', JSON.stringify(demoLogistics));
+      sessionStorage.setItem('agriflow_cached_lang', 'hi');
     }
     setIsLoading(false);
   };
