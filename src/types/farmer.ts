@@ -113,7 +113,7 @@ export interface SpoilageTelemetry {
   safeWindowHours: number;
   safeWindowMinutes: number;
   riskLevel: 'Low' | 'Medium' | 'High';
-  isSimulated: boolean;
+  isSimulated?: boolean;
 }
 
 export interface ReturnLoadOpportunity {
@@ -124,7 +124,7 @@ export interface ReturnLoadOpportunity {
   additionalEarnings: number;
   emptyDistanceAvoidedKm: number;
   status: 'Available' | 'Assigned';
-  isDemoData: boolean;
+  isDemoData?: boolean;
 }
 
 export interface RoadWayPoint {
@@ -153,10 +153,10 @@ export interface RoadLogisticsTracking {
   progressPercent: number;
   distanceRemainingKm: number;
   totalDistanceKm: number;
+  isSimulatedGPS?: boolean;
   spoilageTelemetry: SpoilageTelemetry;
   returnLoad?: ReturnLoadOpportunity;
   timeline: RoadWayPoint[];
-  isSimulatedGPS: boolean;
 }
 
 export interface Order {

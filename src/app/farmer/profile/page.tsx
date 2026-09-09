@@ -61,7 +61,7 @@ export default function FarmerProfilePage() {
             <Sprout className="w-4 h-4 text-emerald-400" /> Registered Primary Crops:
           </span>
           <div className="flex flex-wrap gap-2">
-            {user?.primaryCrops?.map((crop, i) => (
+            {user?.primaryCrops?.map((crop: string, i: number) => (
               <span key={i} className="px-3 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 font-bold">
                 {crop}
               </span>

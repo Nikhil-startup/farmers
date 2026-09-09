@@ -1,12 +1,14 @@
 ﻿import { AIRecommendation, DemandZone, ProducePool, SIHScenarioData } from "@/types/farmer";
 import { apiClient } from "@/lib/apiClient";
+import { mockAIRecommendations, mockDemandZones, mockProducePools } from "./mockData/mockForecasts";
+import { mockSIHScenario } from "./mockData/sihScenarioData";
 
 export const aiService = {
   async getRecommendations(): Promise<AIRecommendation[]> {
     try {
-      return await apiClient<AIRecommendation[]>('/api/farmer/recommendations', { method: 'GET' });
+      return await apiClient<AIRecommendation[]>('/api/farmer/ai-recommendations', { method: 'GET' });
     } catch {
-      return [];
+      return mockAIRecommendations;
     }
   },
 
@@ -14,7 +16,7 @@ export const aiService = {
     try {
       return await apiClient<DemandZone[]>('/api/farmer/demand-zones', { method: 'GET' });
     } catch {
-      return [];
+      return mockDemandZones;
     }
   },
 
@@ -22,18 +24,15 @@ export const aiService = {
     try {
       return await apiClient<ProducePool[]>('/api/farmer/produce-pools', { method: 'GET' });
     } catch {
-      return [];
+      return mockProducePools;
     }
   },
 
-  async getSIHScenario(commodity: string = 'Tomato'): Promise<SIHScenarioData | null> {
+  async getSIHScenario(): Promise<SIHScenarioData> {
     try {
-      return await apiClient<SIHScenarioData>('/api/farmer/realization-benchmark', {
-        method: 'GET',
-        params: { commodity },
-      });
+      return await apiClient<SIHScenarioData>('/api/farmer/impact-scenario', { method: 'GET' });
     } catch {
-      return null;
+      return mockSIHScenario;
     }
   }
 };

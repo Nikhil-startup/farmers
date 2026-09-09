@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -70,7 +70,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
       <div className="bg-emerald-900 text-emerald-100 text-[11px] font-semibold py-1.5 px-4 flex items-center justify-between border-b border-emerald-800">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>AgriFlow AI • Dedicated Farmer & FPO Experience</span>
+          <span>AgriFlow AI â€¢ Dedicated Farmer & FPO Experience</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/" className="hover:text-white flex items-center gap-1 font-bold text-xs">
@@ -88,7 +88,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
             className="hover:text-white flex items-center gap-1 font-bold text-xs"
           >
             <Languages className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            <span>{language === 'en' ? 'à¤¹à¤¿à¤¨à¥à¤¦à¥€' : 'English'}</span>
           </button>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
           {/* Logo */}
           <Link href="/farmer/dashboard" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-emerald-600/30">
-              🌾
+              ðŸŒ¾
             </div>
             <div>
               <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">AgriFlow <span className="text-emerald-500">Farmer</span></span>
@@ -268,7 +268,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        <p>© 2026 AgriFlow AI — Dedicated Farmer & FPO Experience • Road Logistics Only • Verified Cold-Chain Telemetry</p>
+        <p>Â© 2026 AgriFlow AI â€” Dedicated Farmer & FPO Experience â€¢ Road Logistics Only â€¢ Verified Cold-Chain Telemetry</p>
       </footer>
     </div>
   );

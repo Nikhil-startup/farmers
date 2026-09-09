@@ -1,49 +1,16 @@
-import { DeliveryStatus, RoadVehicleType, SpoilageRiskLevel } from './delivery';
+﻿import { RoadVehicleType } from './delivery';
 
-export interface LogisticsFleetVehicle {
+export interface LogisticsOperator {
   id: string;
-  vehicleNumber: string;
+  name: string;
+  phone: string;
+  email: string;
+  role: 'logistics';
   vehicleType: RoadVehicleType;
-  capacityKg: number;
-  currentLoadKg: number;
-  driverName: string;
-  driverPhone: string;
-  status: 'Available' | 'Assigned' | 'In Transit' | 'Loading' | 'Maintenance';
-  reeferActive: boolean;
-  currentTempCelsius: number;
-  currentLocation: string;
-  currentLat: number;
-  currentLng: number;
-  assignedTripId?: string;
-}
-
-export interface ConsolidatedTrip {
-  id: string;
-  tripCode: string;
-  vehicle: LogisticsFleetVehicle;
-  sourceHub: string;
-  destinationHub: string;
-  totalDistanceKm: number;
-  distanceCompletedKm: number;
-  commodity: string;
-  totalKg: number;
-  pickups: {
-    fpoName: string;
-    location: string;
-    qtyKg: number;
-    status: 'Pending' | 'Loaded';
-  }[];
-  status: DeliveryStatus;
-  estimatedArrival: string;
-  coldChainTemp: number;
-  spoilageRisk: SpoilageRiskLevel;
-  returnLoad?: {
-    id: string;
-    route: string;
-    commodity: string;
-    weightKg: number;
-    additionalEarnings: number;
-    emptyDistanceAvoidedKm: number;
-    isClaimed: boolean;
-  };
+  vehicleNumber: string;
+  vehicleCapacityKg: number;
+  reeferEnabled: boolean;
+  operatingRegion: string;
+  preferredRoutes: string[];
+  createdAt: string;
 }

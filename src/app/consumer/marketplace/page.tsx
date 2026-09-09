@@ -1,183 +1,248 @@
-﻿'use client';
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useMemo } from 'react';
 import { consumerService } from '@/services/consumerService';
-import { ConsumerProduct } from '@/types/consumer';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { formatINR } from '@/lib/utils';
-import { ShoppingCart, ShieldCheck, Thermometer, Clock, Sparkles, Filter, Check, ArrowRight } from 'lucide-react';
+import { ProductItem } from '@/types/consumer';
+import ProductCard from '@/components/consumer/ProductCard';
+import GradeFilterTabs from '@/components/consumer/GradeFilterTabs';
+import { useI18n } from '@/context/I18nContext';
+import { 
+  Search, 
+  Filter, 
+  SlidersHorizontal, 
+  Sparkles, 
+  LayoutGrid, 
+  List, 
+  ArrowUpDown,
+  CheckCircle2,
+  Snowflake
+} from 'lucide-react';
 
-export default function MarketplacePage() {
-  const [products, setProducts] = useState<ConsumerProduct[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [addedId, setAddedId] = useState<string | null>(null);
+export default function ConsumerMarketplacePage() {
+  const { t } = useI18n();
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedGrade, setSelectedGrade] = useState<string>('all');
+  const [coldChainOnly, setColdChainOnly] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<'recommended' | 'price-asc' | 'price-desc' | 'freshness'>('recommended');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   useEffect(() => {
-    consumerService.getProducts().then((res) => {
-      setProducts(res);
+    async function load() {
+      setLoading(true);
+      const data = await consumerService.getProducts();
+      setProducts(data);
       setLoading(false);
-    });
+    }
+    load();
   }, []);
 
-  const handleAddToCart = async (product: ConsumerProduct) => {
-    await consumerService.addToCart(product.id, product.minOrderKg);
-    setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 2000);
-  };
+  const categories = ['All', 'Vegetables', 'Fruits', 'Grains', 'Spices'];
 
-  const filtered = selectedCategory === 'All'
-    ? products
-    : products.filter(p => p.category === selectedCategory);
+  const gradeCounts = useMemo(() => {
+    return {
+      all: products.length,
+      A: products.filter(p => p.grade === 'A').length,
+      B: products.filter(p => p.grade === 'B').length,
+      'Organic Certified': products.filter(p => p.grade === 'Organic Certified').length,
+    };
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      // Search
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.farmerStory.farmerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.farmerStory.district.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Category
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+
+      // Grade
+      const matchesGrade = selectedGrade === 'all' || product.grade === selectedGrade;
+
+      // Cold Chain
+      const matchesColdChain = !coldChainOnly || product.isColdChainEligible;
+
+      return matchesSearch && matchesCategory && matchesGrade && matchesColdChain;
+    }).sort((a, b) => {
+      if (sortBy === 'price-asc') return a.pricePerKg - b.pricePerKg;
+      if (sortBy === 'price-desc') return b.pricePerKg - a.pricePerKg;
+      if (sortBy === 'freshness') {
+        const order = { 'Harvested Today': 0, 'Harvested 1 Day Ago': 1, 'Harvested 2 Days Ago': 2, 'Harvested 3 Days Ago': 3, 'Harvested 4 Days Ago': 4 };
+        return (order[a.freshness] ?? 99) - (order[b.freshness] ?? 99);
+      }
+      return 0; // recommended default
+    });
+  }, [products, searchQuery, selectedCategory, selectedGrade, coldChainOnly, sortBy]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
+    <div className="space-y-8">
+      {/* Header & Title */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Farm-Gate B2B Marketplace</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Direct Verified Harvests 🥦</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Grade-A produce direct from farmer producer organizations with transparent price breakdowns.
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            Direct Farm-Gate Sourcing
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mt-0.5">
+            Produce Marketplace
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Browse verified AI-graded harvests with transparent road freight & direct farmer realizations
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/consumer/dashboard">
-            <Button variant="secondary" size="sm">
-              <span>Post Bulk Demand (5 Ton+)</span>
-            </Button>
-          </Link>
-          <Link href="/consumer/cart">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
-              <ShoppingCart className="w-4 h-4 mr-1.5" />
-              <span>View Cart</span>
-            </Button>
-          </Link>
+
+        {/* View Mode & Sorter */}
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          {/* Sorter */}
+          <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs">
+            <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-transparent font-semibold text-zinc-900 dark:text-white focus:outline-none cursor-pointer"
+            >
+              <option value="recommended">AI Recommended</option>
+              <option value="freshness">Freshest First (Harvest Date)</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+          </div>
+
+          {/* Grid / List Switcher */}
+          <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-lg transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-600'
+              }`}
+              title="Grid View"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-600'
+              }`}
+              title="List View"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {['All', 'Vegetables', 'Spices', 'Tubers', 'Fruits'].map((cat) => (
+      {/* Grade Filter Tabs */}
+      <GradeFilterTabs
+        selectedGrade={selectedGrade}
+        onSelectGrade={setSelectedGrade}
+        counts={gradeCounts}
+      />
+
+      {/* Search & Category Filter Bar */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        {/* Search Bar */}
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search produce name, farmer, location, or origin district..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        {/* Categories Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                selectedCategory === cat
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Cold-Chain Toggle */}
+        <button
+          type="button"
+          onClick={() => setColdChainOnly(!coldChainOnly)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap ${
+            coldChainOnly
+              ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30'
+              : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300'
+          }`}
+        >
+          <Snowflake className="w-3.5 h-3.5 text-cyan-500" />
+          Cold-Chain Only
+        </button>
+      </div>
+
+      {/* Produce Grid / List */}
+      {loading ? (
+        <div className="py-20 text-center space-y-3">
+          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-zinc-400 font-medium">Fetching verified farm listings...</p>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="py-16 text-center bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-8 space-y-4">
+          <div className="p-4 rounded-full bg-zinc-100 dark:bg-zinc-800 w-14 h-14 mx-auto flex items-center justify-center text-zinc-400">
+            <Filter className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+            No produce found matching your filters
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+            Try resetting your search query, changing the quality grade, or disabling specific filter criteria.
+          </p>
           <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-              selectedCategory === cat
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('All');
+              setSelectedGrade('all');
+              setColdChainOnly(false);
+            }}
+            className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-sm"
           >
-            {cat}
+            Clear All Filters
           </button>
-        ))}
-      </div>
-
-      {loading && (
-        <div className="p-12 text-center text-xs text-slate-400">Loading marketplace produce...</div>
+        </div>
+      ) : (
+        <div className={
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'
+            : 'space-y-4'
+        }>
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              viewMode={viewMode}
+            />
+          ))}
+        </div>
       )}
-
-      {!loading && filtered.length === 0 && (
-        <Card className="p-12 text-center space-y-3">
-          <h3 className="font-bold text-slate-900 dark:text-white text-base">No produce available in this category</h3>
-          <p className="text-xs text-slate-400">Harvests will appear here once connected farmers list available stock.</p>
-        </Card>
-      )}
-
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {filtered.map((prod) => (
-          <Card key={prod.id} className="p-6 flex flex-col justify-between hover:border-blue-500/50 transition shadow-sm space-y-5">
-            <div>
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-2xl flex-shrink-0">
-                    {prod.image || '🌾'}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">{prod.name}</h3>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{prod.hindiName || ''} • {prod.farmLocation}</span>
-                  </div>
-                </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black">
-                  Grade {prod.grade}
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 my-3">
-                {prod.description}
-              </p>
-
-              {/* Provenance & Telemetry bar */}
-              <div className="grid grid-cols-3 gap-2 text-xs bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                <div>
-                  <span className="text-slate-400 text-[10px] block">Freshness</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> {prod.freshnessScore}%
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] block">Harvested</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {prod.harvestHoursAgo}h ago
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] block">Transit Temp</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                    <Thermometer className="w-3 h-3" /> {prod.coldChainTempCelsius}°C
-                  </span>
-                </div>
-              </div>
-
-              {/* Transparent Price Breakdown */}
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
-                <div className="flex justify-between font-bold text-slate-900 dark:text-white">
-                  <span>Buyer Price:</span>
-                  <span className="text-base text-blue-600 dark:text-blue-400 font-black">{formatINR(prod.consumerPricePerKg)}/kg</span>
-                </div>
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                  <span>↳ Net to Farmer ({Math.round(prod.farmerRealizationPerKg / prod.consumerPricePerKg * 100)}%):</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatINR(prod.farmerRealizationPerKg)}/kg</span>
-                </div>
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                  <span>↳ Road Logistics & Cold-Chain:</span>
-                  <span>{formatINR(prod.logisticsFeePerKg)}/kg</span>
-                </div>
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                  <span>↳ AgriFlow Platform & Escrow:</span>
-                  <span>{formatINR(prod.platformFeePerKg)}/kg</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <Link href={`/consumer/product/${prod.id}`} className="flex-1">
-                <Button variant="outline" size="sm" className="w-full">
-                  Provenance Details
-                </Button>
-              </Link>
-              <Button
-                size="sm"
-                onClick={() => handleAddToCart(prod)}
-                className={`flex-1 ${addedId === prod.id ? 'bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}
-              >
-                {addedId === prod.id ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" /> Added ({prod.minOrderKg}kg)
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4 mr-1" /> Add Min ({prod.minOrderKg}kg)
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }

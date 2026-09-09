@@ -7,18 +7,16 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
-import { AIQualityGradingModal } from '@/components/farmer/AIQualityGradingModal';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { produceSchema, ProduceFormData } from '@/lib/validators';
-import { Sprout, Plus, Sparkles, Filter, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Sprout, Plus, Filter, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
 export default function FarmerProducePage() {
   const [produceList, setProduceList] = useState<Produce[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<ProduceFormData>({
     resolver: zodResolver(produceSchema),
@@ -30,22 +28,14 @@ export default function FarmerProducePage() {
       harvestDate: new Date().toISOString().split('T')[0],
       expectedPrice: 42,
       location: 'Shadnagar FPO Hub, Telangana',
-      notes: 'Clean graded produce stored in crates.',
+      notes: 'Clean produce stored in crates.',
     },
   });
 
-  const selectedCrop = watch('crop');
+  useEffect(() => { let isMounted = true; farmerService.getProduceList().then(data => { if (isMounted) setProduceList(data || []); }).catch(() => { if (isMounted) setProduceList([]); }); return () => { isMounted = false; }; }, []);
 
-  useEffect(() => {
-    const fetchProduce = async () => {
-      const list = await farmerService.getProduceList();
-      setProduceList(list || []);
-    };
-    fetchProduce();
-  }, []);
-
-  const onAddProduceSubmit = async (data: ProduceFormData) => {
-    await farmerService.addProduce({
+  const onAddProduceSubmit = (data: ProduceFormData) => {
+    farmerService.addProduce({
       crop: data.crop,
       quantity: Number(data.quantity),
       unit: data.unit,
@@ -55,15 +45,9 @@ export default function FarmerProducePage() {
       location: data.location,
       notes: data.notes,
     });
-    const updated = await farmerService.getProduceList();
-    setProduceList(updated || []);
+    farmerService.getProduceList().then(data => setProduceList(data || []));
     setIsAddModalOpen(false);
     reset();
-  };
-
-  const handleApplyAIGrade = (grade: string, price: number) => {
-    setValue('grade', grade as ProduceGrade);
-    setValue('expectedPrice', price);
   };
 
   const filtered = filterStatus === 'All'
@@ -78,7 +62,7 @@ export default function FarmerProducePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">My Produce Inventory</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Manage listed crops, declare harvest quantities, and run AI quality grading checks.
+            Manage listed crops, declare harvest quantities, and connect with direct buyers.
           </p>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)}>
@@ -165,7 +149,7 @@ export default function FarmerProducePage() {
       )}
 
       {/* Add Produce Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add Agricultural Produce" subtitle="Declare crop quantity, quality grade, and expected realization price.">
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add Agricultural Produce" subtitle="Declare crop quantity, grade, and expected realization price.">
         <form onSubmit={handleSubmit(onAddProduceSubmit)} className="space-y-4">
           
           <div>
@@ -201,20 +185,9 @@ export default function FarmerProducePage() {
             </div>
           </div>
 
-          {/* Grade selection with AI Button */}
+          {/* Grade selection */}
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300">Quality Grade (A, A-, B, B-, C, C-, D) *</label>
-              <button
-                type="button"
-                onClick={() => setIsAIModalOpen(true)}
-                className="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-500/40"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Get AI Quality Grade</span>
-              </button>
-            </div>
-
+            <label className="text-xs font-bold text-slate-300">Grade (A, A-, B, B-, C, C-, D) *</label>
             <div className="grid grid-cols-7 gap-1.5">
               {(['A', 'A-', 'B', 'B-', 'C', 'C-', 'D'] as ProduceGrade[]).map((g) => (
                 <label key={g} className="cursor-pointer">
@@ -281,14 +254,7 @@ export default function FarmerProducePage() {
         </form>
       </Modal>
 
-      {/* AI Grading Modal */}
-      <AIQualityGradingModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        cropName={selectedCrop || 'Tomato'}
-        onGradeApplied={handleApplyAIGrade}
-      />
-
     </div>
   );
 }
+
