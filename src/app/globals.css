@@ -20,7 +20,7 @@ body {
   overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Telugu", "Noto Sans Tamil", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Malayalam", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 
 /* Ensure no text collisions or unbreakable words */

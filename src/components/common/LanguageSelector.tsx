@@ -81,21 +81,22 @@ export function LanguageSelector({ variant = 'select', className = '', onSelectL
 
   if (variant === 'compact') {
     return (
-      <div className={`relative inline-flex items-center gap-1.5 ${className}`}>
-        <Languages className="w-4 h-4 text-emerald-400 shrink-0" />
+      <div className={`relative inline-flex items-center gap-1 ${className}`}>
+        <Languages className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
         <select
           value={language}
           onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
           disabled={updating}
-          className="bg-slate-900/90 text-white text-xs font-bold border border-slate-700 rounded-lg px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer"
+          aria-label="Select Language"
+          className="bg-slate-900 text-white text-[11px] sm:text-xs font-bold border border-slate-700 rounded-lg px-1.5 py-0.5 sm:px-2 sm:py-1 outline-none focus:border-emerald-500 cursor-pointer max-w-[110px] sm:max-w-none"
         >
           {supportedLanguages.map((l) => (
-            <option key={l.code} value={l.code} className="bg-slate-900 text-white">
+            <option key={l.code} value={l.code} className="bg-slate-900 text-white py-1">
               {l.nativeLabel} ({l.label})
             </option>
           ))}
         </select>
-        {updating && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />}
+        {updating && <Loader2 className="w-3 h-3 animate-spin text-emerald-400 shrink-0" />}
       </div>
     );
   }
