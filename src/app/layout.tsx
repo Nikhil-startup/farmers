@@ -8,6 +8,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import { CartProvider } from "@/context/CartContext";
 import { TrackingProvider } from "@/context/TrackingContext";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,6 +50,7 @@ export default function RootLayout({
           </BandwidthProvider>
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
