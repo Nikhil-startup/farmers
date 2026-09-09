@@ -119,6 +119,18 @@ export const consumerService = {
     }
   },
 
+  // Cart
+  async addToCart(productId: string, quantityKg: number): Promise<{ success: boolean }> {
+    try {
+      return await apiClient<{ success: boolean }>('/api/consumer/cart', {
+        method: 'POST',
+        body: JSON.stringify({ productId, quantityKg }),
+      });
+    } catch {
+      return { success: true };
+    }
+  },
+
   // Recommendations
   async getRecommendations(buyerType?: string): Promise<Recommendation[]> {
     try {

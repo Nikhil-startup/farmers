@@ -252,3 +252,46 @@ export interface Recommendation {
   image: string;
   suitableBuyerTypes: BuyerType[];
 }
+
+export interface ConsumerProduct {
+  id: string;
+  name: string;
+  hindiName?: string;
+  category: string;
+  farmerName: string;
+  farmLocation: string;
+  fpoCluster?: string;
+  grade: string;
+  availableKg: number;
+  minOrderKg: number;
+  consumerPricePerKg: number;
+  farmerRealizationPerKg: number;
+  logisticsFeePerKg: number;
+  platformFeePerKg: number;
+  harvestDate: string;
+  harvestHoursAgo: number;
+  coldChainTempCelsius: number;
+  freshnessScore: number;
+  image: string;
+  description: string;
+  provenanceBatchId: string;
+}
+
+export interface BulkDemandPost {
+  id: string;
+  buyerName: string;
+  buyerType: string;
+  commodity: string;
+  requiredQuantityKg: number;
+  maxTargetPricePerKg: number;
+  deliveryLocation: string;
+  targetDate: string;
+  status: 'Open' | 'Consolidated' | 'Dispatched' | 'Fulfilled';
+  allocatedFarmers: {
+    farmerName: string;
+    location: string;
+    allocatedKg: number;
+    grade: string;
+  }[];
+  createdAt: string;
+}

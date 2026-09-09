@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,7 +29,7 @@ export default function FarmerAnalyticsPage() {
 
   useEffect(() => {
     marketPriceService.getPriceTrends('Tomato').then(setPriceTrends);
-    aiService.getSIHScenario('Tomato').then(setSihData);
+    aiService.getSIHScenario().then(setSihData);
   }, []);
 
   return (

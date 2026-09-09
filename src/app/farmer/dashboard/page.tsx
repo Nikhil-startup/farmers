@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -20,7 +20,8 @@ import {
   Sparkles,
   BarChart3,
   PackageCheck,
-  CheckCircle2
+  CheckCircle2,
+  Thermometer
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
@@ -81,7 +82,7 @@ export default function FarmerDashboard() {
         </Link>
       </div>
 
-      {/* 3. QUICK ACTIONS - Large touch targets for mobile */}
+      {/* 3. QUICK ACTIONS */}
       <div className="space-y-3">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -90,13 +91,46 @@ export default function FarmerDashboard() {
               <Plus className="w-7 h-7 mb-1.5" />
               <span className="font-bold text-sm">Add Produce</span>
             </div>
-            <div>
-              <h3 className="font-bold text-white text-base">Active Road Logistics Dispatch</h3>
-              <p className="text-xs text-slate-400">Tata 407 Reefer (TS 08 UB 4192) â€¢ Driver: Mohammed Ismail</p>
+          </Link>
+          <Link href="/farmer/market-prices" className="block">
+            <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
+              <TrendingUp className="w-7 h-7 mb-1.5 text-emerald-400" />
+              <span className="font-bold text-sm">Mandi Prices</span>
+            </div>
+          </Link>
+          <Link href="/farmer/demand-map" className="block">
+            <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
+              <MapPin className="w-7 h-7 mb-1.5 text-blue-400" />
+              <span className="font-bold text-sm">Demand Map</span>
+            </div>
+          </Link>
+          <Link href="/farmer/recommendations" className="block">
+            <div className="bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl flex flex-col items-center justify-center text-center border border-slate-700 transition transform active:scale-95 h-28">
+              <Sparkles className="w-7 h-7 mb-1.5 text-amber-400" />
+              <span className="font-bold text-sm">AI Advice</span>
             </div>
           </Link>
         </div>
       </div>
+
+      {/* 4. ACTIVE ROAD TELEMETRY */}
+      <Card className="p-6 bg-slate-900 border-slate-800 text-white space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <Truck className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Active Road Logistics Dispatch</h3>
+              <p className="text-xs text-slate-400">Tata 407 Reefer (TS 08 UB 4192) • Driver: Mohammed Ismail</p>
+            </div>
+          </div>
+          <Link href="/farmer/tracking/TRK-9821">
+            <Button size="sm" variant="outline" className="text-xs border-slate-700 hover:bg-slate-800">
+              Live Map
+            </Button>
+          </Link>
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
@@ -107,9 +141,9 @@ export default function FarmerDashboard() {
           <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
             <span className="text-slate-400 block">Cold-Chain Temp</span>
             <span className="text-sm font-bold text-emerald-400 block mt-0.5 flex items-center gap-1">
-              <Thermometer className="w-3.5 h-3.5" /> 6.2Â°C (Optimal)
+              <Thermometer className="w-3.5 h-3.5" /> 6.2°C (Optimal)
             </span>
-            <span className="text-[10px] text-slate-400">Target: 6.0Â°C</span>
+            <span className="text-[10px] text-slate-400">Target: 6.0°C</span>
           </div>
           <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
             <span className="text-slate-400 block">Remaining Safe Window</span>
