@@ -40,7 +40,7 @@ export default function CombinedMainHub() {
           <span className="hidden md:inline text-slate-400">• Farmer Portal + Buyer Marketplace + Reefer Logistics</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/farmer/dashboard" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
+          <Link href="/farmer" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
             <Sprout className="w-3 h-3" /> Farmer Portal
           </Link>
           <span className="text-slate-700">|</span>
@@ -76,14 +76,14 @@ export default function CombinedMainHub() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/farmer/dashboard"
+              href="/farmer"
               className="px-3 py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-800 hover:bg-emerald-900/80 text-emerald-300 text-xs font-semibold transition flex items-center gap-1"
             >
               <Sprout className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Farmer Portal</span>
             </Link>
             <Link
-              href="/consumer/marketplace"
+              href="/consumer"
               className="px-3 py-1.5 rounded-lg bg-teal-950/80 border border-teal-800 hover:bg-teal-900/80 text-teal-300 text-xs font-semibold transition flex items-center gap-1"
             >
               <Store className="w-3.5 h-3.5" />
@@ -202,10 +202,10 @@ export default function CombinedMainHub() {
             </div>
             <div className="pt-6 space-y-2">
               <Link
-                href="/farmer/dashboard"
+                href="/farmer"
                 className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-950"
               >
-                <span>Open Farmer Dashboard</span>
+                <span>Enter Farmer Portal</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <div className="grid grid-cols-2 gap-2">
