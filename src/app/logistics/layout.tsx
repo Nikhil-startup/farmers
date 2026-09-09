@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -15,16 +15,26 @@ import {
   Package,
   Layers,
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function LogisticsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { href: '/logistics/dashboard', label: 'Fleet Dashboard', icon: Layers },
+    { href: '/logistics/trips', label: 'Consolidated Trips', icon: Truck },
+    { href: '/logistics/return-loads', label: 'Return Load AI', icon: RefreshCw },
+    { href: '/logistics/telemetry', label: 'Reefer Telemetry', icon: ThermometerSnowflake },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
       {/* Universal Top Switcher Banner */}
-      <div className="bg-slate-900/90 border-b border-slate-800 text-xs text-slate-400 px-4 py-1.5 flex items-center justify-between">
+      <div className="bg-slate-900/90 border-b border-slate-800 text-xs text-slate-400 px-4 py-1.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1.5 font-bold text-cyan-400">
             <Truck className="w-3.5 h-3.5" /> AgriFlow Fleet & Cold-Chain Network
@@ -47,44 +57,94 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* Main Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center text-white font-black shadow-lg shadow-cyan-600/30">
+      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center text-white font-black shrink-0 shadow-lg shadow-cyan-600/30">
               🚚
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-xl tracking-tight text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white whitespace-nowrap">
                   AgriFlow <span className="text-cyan-400">Logistics</span>
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
+                <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 whitespace-nowrap">
                   Active Fleet Ops
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Reefer Telemetry, Highway Routes & Return Load Matching</p>
+              <p className="text-[11px] text-slate-400 truncate hidden md:block">Reefer Telemetry, Highway Routes & Return Load Matching</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-cyan-950 text-cyan-400 border border-cyan-700/60 shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/farmer/tracking/TRK-RD-9021"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-950 border border-cyan-700/60 hover:bg-cyan-900/80 text-cyan-300 text-xs font-semibold transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-700/60 hover:bg-cyan-900/80 text-cyan-300 text-xs font-semibold transition"
             >
               <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Active Trip GPS</span>
+              <span className="hidden sm:inline">Active Trip GPS</span>
+              <span className="sm:hidden">GPS</span>
             </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs px-3.5 py-1.5 rounded-lg border border-slate-700 transition"
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+              aria-label="Toggle navigation menu"
             >
-              <span>Main Hub</span>
-            </Link>
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
         </div>
+
+        {/* Mobile Drawer Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-slate-800 bg-slate-900 px-4 py-3 space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                    isActive
+                      ? 'bg-cyan-950 text-cyan-400 border border-cyan-700/60'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 text-cyan-400" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full min-w-0">
         {children}
       </main>
 
