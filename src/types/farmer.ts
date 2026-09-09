@@ -7,14 +7,14 @@ export interface User {
   id: string;
   name: string;
   phone: string;
-  email: string;
-  role: 'farmer';
-  location: string;
-  farmName: string;
+  email?: string;
+  role: 'farmer' | 'consumer' | 'logistics' | 'fpo';
+  location?: string;
+  farmName?: string;
   farmerType?: 'Individual Farmer' | 'FPO' | 'Farmer Group';
   farmSize?: string;
   primaryCrops?: string[];
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface Produce {

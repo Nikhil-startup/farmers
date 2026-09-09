@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "teemforge-platform-d1c76",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

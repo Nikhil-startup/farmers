@@ -13,7 +13,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, User, Tractor, Sprout } from 'luci
 
 export default function FarmerRegisterPage() {
   const router = useRouter();
-  const { register: authRegister } = useAuth();
+  const { loginWithDemo } = useAuth();
   const [step, setStep] = useState(1);
 
   const { register, handleSubmit, trigger, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
@@ -43,16 +43,7 @@ export default function FarmerRegisterPage() {
   };
 
   const onSubmit = async (data: RegisterFormData) => {
-    await authRegister({
-      name: data.fullName,
-      phone: '+91 ' + data.phone,
-      email: data.email,
-      farmName: data.farmName,
-      location: `${data.village}, ${data.district}, ${data.state}`,
-      farmSize: data.farmSize,
-      farmerType: data.farmerType,
-      primaryCrops: data.primaryCrops.split(',').map(c => c.trim()),
-    });
+    await loginWithDemo('farmer', data.fullName, '+91 ' + data.phone);
     router.push('/farmer/dashboard');
   };
 

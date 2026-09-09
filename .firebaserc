@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "teemforge-platform"
+  },
+  "targets": {
+    "teemforge-platform": {
+      "hosting": {
+        "teemforge-platform-d1c76": [
+          "teemforge-platform-d1c76"
+        ]
+      }
+    }
+  }
+}
