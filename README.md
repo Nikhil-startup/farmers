@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgriFlow — AI-Powered Agricultural Supply Chain Platform
 
-## Getting Started
+AgriFlow is a multimodal, multilingual end-to-end platform bridging Farmers, Consumers/Buyers, and Logistics Operators with real-time dynamic pricing, route optimization, backend-persisted localization, and transparent farm-to-fork tracking.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📁 Repository Structure
+
+```text
+├── docs/                      # Documentation and presentations
+│   ├── AgriFlow_AI_SIH_2026_Presentation.pptx
+│   └── FIREBASE_SETUP_GUIDE.md
+├── functions/                 # Firebase Cloud Functions
+├── public/                    # Static assets, icons, and public media
+├── scripts/                   # Setup, build, and generator helper scripts
+├── servers/                   # Backend microservices (Express + SQLite/Python)
+│   ├── agriflow.db
+│   ├── buyer-server.js
+│   ├── db.js
+│   ├── farmer-server.js
+│   ├── logistics-server.js
+│   ├── server.py
+│   └── start-all.js
+├── standalone/                # Standalone preview & offline HTML demos
+├── src/                       # Frontend Next.js Application
+│   ├── app/                   # Next.js App Router
+│   │   ├── (auth)/            # Auth routes & public gateways
+│   │   ├── farmer/            # Farmer Portal (Produce, Mandi, Orders, etc.)
+│   │   ├── consumer/          # Consumer Portal (Marketplace, Cart, Orders, etc.)
+│   │   ├── logistics/         # Logistics Portal (Jobs, Trips, Tracking, etc.)
+│   │   └── api/               # API Routes & proxy endpoints
+│   ├── components/            # Reusable UI Components
+│   │   ├── common/            # Shared components (LanguageSelector, Headers, etc.)
+│   │   ├── consumer/          # Consumer-specific components
+│   │   ├── farmer/            # Farmer-specific components
+│   │   └── logistics/         # Logistics-specific components
+│   ├── context/               # React Context Providers (AuthContext, I18nContext, etc.)
+│   ├── i18n/                  # Multilingual translation dictionaries (7 Indian languages)
+│   ├── lib/                   # Utility libraries & Firebase client
+│   ├── services/              # API and backend service integrations
+│   └── types/                 # TypeScript type definitions
+├── firebase.json              # Firebase configuration
+├── firestore.rules            # Firestore security rules
+└── package.json               # Dependencies and scripts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Supported Languages (Backend-Persisted)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+AgriFlow supports 7 Indian languages across all portals:
+- **English** (`en`)
+- **Telugu** (`te` - తెలుగు)
+- **Tamil** (`ta` - தமிழ்)
+- **Malayalam** (`ml` - മലയാളം)
+- **Hindi** (`hi` - हिन्दी)
+- **Bengali** (`bn` - বাংলা)
+- **Marathi** (`mr` - मराठी)
 
-## Learn More
+Language preferences belong to the authenticated user account and synchronize across all devices.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Quick Start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-## Deploy on Vercel
+### 2. Start Backend Microservices
+```bash
+node servers/start-all.js
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. Start Next.js Development Server
+```bash
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+---
+
+## 🏗️ Production Build
+
+```bash
+npm run build
+```
