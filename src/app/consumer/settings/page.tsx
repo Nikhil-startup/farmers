@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useI18n } from '@/context/I18nContext';
 import { useAuth } from '@/context/AuthContext';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { 
   Settings, 
   Globe, 
@@ -57,47 +58,15 @@ export default function ConsumerSettingsPage() {
             </div>
             <div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                Language & Localization
+                {t('preferredLanguage')}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Switch entire buyer portal between English and Hindi
+                Synchronized across all your devices and portal sessions
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setLanguage('en')}
-              className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                language === 'en'
-                  ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20'
-                  : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300'
-              }`}
-            >
-              <div>
-                <span className="text-sm font-bold text-zinc-900 dark:text-white block">English</span>
-                <span className="text-xs text-zinc-400">Default (English)</span>
-              </div>
-              {language === 'en' && <Check className="w-5 h-5 text-emerald-500" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setLanguage('hi')}
-              className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                language === 'hi'
-                  ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20'
-                  : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300'
-              }`}
-            >
-              <div>
-                <span className="text-sm font-bold text-zinc-900 dark:text-white block">हिंदी (Hindi)</span>
-                <span className="text-xs text-zinc-400">भारतीय भाषा</span>
-              </div>
-              {language === 'hi' && <Check className="w-5 h-5 text-emerald-500" />}
-            </button>
-          </div>
+          <LanguageSelector variant="cards" />
         </div>
 
         {/* Low-Bandwidth Mode & Telemetry Optimization */}

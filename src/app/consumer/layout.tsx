@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useI18n } from '@/context/I18nContext';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { 
   Store, 
   LayoutDashboard, 
@@ -62,13 +63,9 @@ export default function ConsumerLayout({
           <span className="hidden sm:inline text-emerald-300">• Direct Farmer-to-Consumer Wholesale & Retail Portal</span>
         </div>
 
-        <div className="flex items-center gap-4 text-xs">
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            className="text-emerald-200 hover:text-white font-medium transition-colors"
-          >
-            {language === 'en' ? '🇮🇳 हिंदी' : '🇬🇧 English'}
-          </button>
+        <div className="flex items-center gap-3 text-xs">
+          <LanguageSelector variant="compact" />
+          <span className="text-emerald-700">|</span>
           <Link
             href="/"
             className="flex items-center gap-1 text-emerald-200 hover:text-white font-semibold transition-colors"

@@ -9,46 +9,33 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Sun, Moon, Zap, ZapOff, Languages, LogOut } from 'lucide-react';
 
+import { LanguageSelector } from '@/components/common/LanguageSelector';
+
 export default function FarmerSettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const { isLowBandwidth, toggleLowBandwidth } = useBandwidth();
-  const { language, setLanguage } = useI18n();
+  const { t } = useI18n();
   const { logout } = useAuth();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Settings & Preferences</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('settings')}</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure language, bandwidth consumption, and theme preferences.</p>
       </div>
 
       <Card className="p-6 space-y-6">
         
         {/* Language setting */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="space-y-3 pb-4 border-b border-slate-800">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Languages className="w-4 h-4 text-emerald-400" /> Language (भाषा)
+              <Languages className="w-4 h-4 text-emerald-400" /> {t('preferredLanguage')}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Select preferred display language.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Select preferred display language across all devices.</p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={language === 'en' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setLanguage('en')}
-            >
-              English
-            </Button>
-            <Button
-              variant={language === 'hi' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setLanguage('hi')}
-            >
-              हिन्दी
-            </Button>
-          </div>
+          <LanguageSelector variant="cards" />
         </div>
 
         {/* Low Bandwidth Mode */}

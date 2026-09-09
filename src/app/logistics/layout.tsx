@@ -20,16 +20,29 @@ import {
   X
 } from 'lucide-react';
 
+import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { useI18n } from '@/context/I18nContext';
+import { useAuth } from '@/context/AuthContext';
+
 export default function LogisticsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useI18n();
+  const { logisticsUser, logoutLogistics } = useAuth();
 
   const navItems = [
-    { href: '/logistics/dashboard', label: 'Fleet Dashboard', icon: Layers },
-    { href: '/logistics/trips', label: 'Consolidated Trips', icon: Truck },
-    { href: '/logistics/return-loads', label: 'Return Load AI', icon: RefreshCw },
-    { href: '/logistics/telemetry', label: 'Reefer Telemetry', icon: ThermometerSnowflake },
+    { href: '/logistics/dashboard', label: t('fleetDashboard') || 'Fleet Dashboard', icon: Layers },
+    { href: '/logistics/trips', label: t('consolidatedTrips') || 'Consolidated Trips', icon: Truck },
+    { href: '/logistics/return-loads', label: t('returnLoadAI') || 'Return Load AI', icon: RefreshCw },
+    { href: '/logistics/telemetry', label: t('reeferTelemetry') || 'Reefer Telemetry', icon: ThermometerSnowflake },
   ];
+
+  const publicRoutes = ['/logistics', '/logistics/login', '/logistics/register'];
+  const isPublic = publicRoutes.includes(pathname);
+
+  if (isPublic) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
@@ -46,13 +59,15 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
             <ArrowLeft className="w-3 h-3" /> Home Hub
           </Link>
           <span className="text-slate-700">|</span>
-          <Link href="/farmer/dashboard" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
+          <Link href="/farmer" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
             <Sprout className="w-3 h-3" /> Farmer Portal
           </Link>
           <span className="text-slate-700">|</span>
-          <Link href="/consumer/marketplace" className="text-teal-400 hover:text-teal-300 transition flex items-center gap-1">
+          <Link href="/consumer" className="text-teal-400 hover:text-teal-300 transition flex items-center gap-1">
             <Store className="w-3 h-3" /> Buyer Portal
           </Link>
+          <span className="text-slate-700">|</span>
+          <LanguageSelector variant="compact" />
         </div>
       </div>
 
@@ -107,6 +122,15 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
               <span className="hidden sm:inline">Active Trip GPS</span>
               <span className="sm:hidden">GPS</span>
             </Link>
+
+            {logisticsUser && (
+              <button
+                onClick={logoutLogistics}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-rose-950/40 hover:border-rose-700/50 text-xs font-semibold text-slate-300 hover:text-rose-400 transition"
+              >
+                {t('logout')}
+              </button>
+            )}
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

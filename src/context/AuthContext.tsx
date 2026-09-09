@@ -29,11 +29,16 @@ interface AuthContextType {
   loginConsumer: (identifier: string, pass: string) => Promise<boolean>;
   registerConsumer: (data: Partial<ConsumerUser>) => Promise<boolean>;
   logoutConsumer: () => void;
-  updateConsumerProfile: (data: Partial<ConsumerUser>) => void;
+  updateFarmerLanguage: (lang: string) => Promise<boolean>;
+  updateConsumerLanguage: (lang: string) => Promise<boolean>;
+  updateLogisticsLanguage: (lang: string) => Promise<boolean>;
+  updateFarmerProfile: (data: Partial<FarmerUser>) => Promise<boolean>;
+  updateConsumerProfile: (data: Partial<ConsumerUser>) => Promise<boolean>;
+  updateLogisticsProfile: (data: Partial<LogisticsOperator>) => Promise<boolean>;
+  refreshUserProfile: () => Promise<void>;
   loginLogistics: (identifier: string, pass: string) => Promise<boolean>;
   registerLogistics: (data: Partial<LogisticsOperator>) => Promise<boolean>;
   logoutLogistics: () => void;
-  updateLogisticsProfile: (data: Partial<LogisticsOperator>) => void;
   sendPhoneOtp: (phoneNumber: string, appVerifier?: RecaptchaVerifier | string) => Promise<ConfirmationResult>;
   verifyPhoneOtp: (
     confirmationResult: ConfirmationResult,
@@ -55,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Restore session from localStorage if present
+    // Restore session from localStorage if present as temporary fast cache
     if (typeof window !== 'undefined') {
       const storedFarmer = localStorage.getItem('agriflow_farmer_auth');
       if (storedFarmer) {
@@ -72,8 +77,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try { setLogisticsUser(JSON.parse(storedLogistics)); } catch { setLogisticsUser(null); }
       }
     }
-    setIsLoading(false);
+    
+    // Fetch real profile from backend as source of truth
+    refreshUserProfile().finally(() => {
+      setIsLoading(false);
+    });
   }, []);
+
+  // Source of Truth: GET /api/auth/me to sync preferredLanguage and locations
+  const refreshUserProfile = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('agriflow_auth_token') : null;
+      if (!token) return;
+
+      const profile = await apiClient<{
+        id: string;
+        name: string;
+        role: 'farmer' | 'consumer' | 'logistics' | 'fpo';
+        state?: string;
+        district?: string;
+        place?: string;
+        preferredLanguage?: any;
+        phone?: string;
+        email?: string;
+        farmName?: string;
+        location?: string;
+        buyerType?: any;
+        vehicleType?: any;
+        vehicleNumber?: any;
+      }>('/api/auth/me');
+
+      if (profile) {
+        if (profile.role === 'farmer' || profile.role === 'fpo') {
+          const updatedFarmer: FarmerUser = {
+            id: profile.id,
+            name: profile.name,
+            phone: profile.phone || '',
+            email: profile.email || '',
+            role: 'farmer',
+            state: profile.state,
+            district: profile.district,
+            place: profile.place,
+            preferredLanguage: profile.preferredLanguage,
+            farmName: profile.farmName,
+            location: profile.location || `${profile.place || ''}, ${profile.district || ''}, ${profile.state || ''}`.replace(/^, |, $/g, ''),
+            farmerType: 'FPO',
+          };
+          setUser(updatedFarmer);
+          localStorage.setItem('agriflow_farmer_auth', JSON.stringify(updatedFarmer));
+          if (profile.preferredLanguage) {
+            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+          }
+        } else if (profile.role === 'consumer') {
+          const updatedConsumer: ConsumerUser = {
+            id: profile.id,
+            name: profile.name,
+            phone: profile.phone || '',
+            email: profile.email || '',
+            role: 'consumer',
+            state: profile.state,
+            district: profile.district,
+            place: profile.place,
+            preferredLanguage: profile.preferredLanguage,
+            location: profile.location || `${profile.place || ''}, ${profile.district || ''}, ${profile.state || ''}`,
+            buyerType: profile.buyerType || 'bulk-buyer',
+            createdAt: new Date().toISOString(),
+          };
+          setConsumerUser(updatedConsumer);
+          localStorage.setItem('agriflow_consumer_auth', JSON.stringify(updatedConsumer));
+          if (profile.preferredLanguage) {
+            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+          }
+        } else if (profile.role === 'logistics') {
+          const updatedLogistics: LogisticsOperator = {
+            id: profile.id,
+            name: profile.name,
+            phone: profile.phone || '',
+            email: profile.email || '',
+            role: 'logistics',
+            state: profile.state,
+            district: profile.district,
+            place: profile.place,
+            preferredLanguage: profile.preferredLanguage,
+            vehicleType: profile.vehicleType || 'Tata 407 Reefer',
+            vehicleNumber: profile.vehicleNumber || 'TS 08 UB 4192',
+            vehicleCapacityKg: 5000,
+            reeferEnabled: true,
+            operatingRegion: profile.state ? `${profile.state} Corridor` : 'Freight Corridor',
+            preferredRoutes: ['Shadnagar → Hyderabad'],
+            createdAt: new Date().toISOString(),
+          };
+          setLogisticsUser(updatedLogistics);
+          localStorage.setItem('agriflow_logistics_auth', JSON.stringify(updatedLogistics));
+          if (profile.preferredLanguage) {
+            localStorage.setItem('agriflow_cached_lang', profile.preferredLanguage);
+          }
+        }
+      }
+    } catch {
+      // Backend not connected or unauthenticated; retain loaded session or fallback
+    }
+  };
 
   const login = async (identifier: string, pass: string): Promise<boolean> => {
     setIsLoading(true);
@@ -84,16 +188,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setUser(res.user);
       localStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
-      // Allow seamless authentication fallback for UI development
       const fallbackUser: FarmerUser = {
         id: 'farmer-001',
         name: 'Ramesh Reddy',
         phone: identifier,
         email: 'ramesh.reddy@fpo.in',
         role: 'farmer',
+        state: 'Telangana',
+        district: 'Rangareddy',
+        place: 'Shadnagar',
+        preferredLanguage: 'te',
         location: 'Shadnagar, Rangareddy, Telangana',
         farmName: 'Shadnagar Farmers Collective',
         farmerType: 'FPO',
@@ -101,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(fallbackUser);
       localStorage.setItem('agriflow_farmer_auth', JSON.stringify(fallbackUser));
+      localStorage.setItem('agriflow_cached_lang', 'te');
       return true;
     } finally {
       setIsLoading(false);
@@ -116,6 +227,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setUser(res.user);
       localStorage.setItem('agriflow_farmer_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
@@ -125,8 +239,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: data.name || 'New Farmer',
         phone: data.phone || '',
         email: data.email || '',
+        state: data.state || 'Telangana',
+        district: data.district || 'Rangareddy',
+        place: data.place || 'Chevella',
+        preferredLanguage: data.preferredLanguage || 'te',
         farmName: data.farmName || '',
-        location: data.location || '',
+        location: data.location || `${data.place || 'Chevella'}, ${data.district || 'Rangareddy'}, ${data.state || 'Telangana'}`,
         farmerType: data.farmerType || 'Individual Farmer',
         farmSize: data.farmSize || '5 Acres',
         primaryCrops: data.primaryCrops || ['Tomato'],
@@ -134,26 +252,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(newUser);
       localStorage.setItem('agriflow_farmer_auth', JSON.stringify(newUser));
+      if (newUser.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', newUser.preferredLanguage);
+      }
       return true;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Logout
+  const updateFarmerProfile = async (data: Partial<FarmerUser>): Promise<boolean> => {
+    if (!user) return false;
+    const updated = { ...user, ...data };
+    try {
+      await apiClient('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    } catch {
+      // Offline / fallback persistence
+    }
+    setUser(updated);
+    localStorage.setItem('agriflow_farmer_auth', JSON.stringify(updated));
+    if (data.preferredLanguage) {
+      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+    }
+    return true;
+  };
+
+  const updateFarmerLanguage = async (lang: string): Promise<boolean> => {
+    return updateFarmerProfile({ preferredLanguage: lang as any });
+  };
+
+  // Logout Farmer
   const logout = async () => {
     try {
       await signOut(auth);
     } catch {
       // ignore
     }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('agriflow_user');
-      localStorage.removeItem('agriflow_demo_user');
-    }
     setUser(null);
     localStorage.removeItem('agriflow_farmer_auth');
     localStorage.removeItem('agriflow_auth_token');
+    localStorage.removeItem('agriflow_cached_lang');
     router.push('/farmer');
   };
 
@@ -166,6 +307,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setConsumerUser(res.user);
       localStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
@@ -175,12 +319,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: identifier,
         email: identifier.includes('@') ? identifier : 'buyer@agriflow.in',
         role: 'consumer',
+        state: 'Telangana',
+        district: 'Hyderabad',
+        place: 'Bowenpally',
+        preferredLanguage: 'ta',
         location: 'Bowenpally Wholesale Corridor, Hyderabad',
         buyerType: 'bulk-buyer',
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(active);
       localStorage.setItem('agriflow_consumer_auth', JSON.stringify(active));
+      localStorage.setItem('agriflow_cached_lang', 'ta');
       return true;
     } finally {
       setIsLoading(false);
@@ -196,6 +345,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setConsumerUser(res.user);
       localStorage.setItem('agriflow_consumer_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
@@ -205,31 +357,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: data.phone || '',
         email: data.email || 'buyer@agriflow.in',
         role: 'consumer',
-        location: data.location || 'Hyderabad, Telangana',
+        state: data.state || 'Telangana',
+        district: data.district || 'Hyderabad',
+        place: data.place || 'Bowenpally',
+        preferredLanguage: data.preferredLanguage || 'ta',
+        location: data.location || `${data.place || 'Bowenpally'}, ${data.district || 'Hyderabad'}, ${data.state || 'Telangana'}`,
         buyerType: data.buyerType || 'bulk-buyer',
+        typicalOrderSizeKg: data.typicalOrderSizeKg || 1000,
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(newConsumer);
       localStorage.setItem('agriflow_consumer_auth', JSON.stringify(newConsumer));
+      if (newConsumer.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', newConsumer.preferredLanguage);
+      }
       return true;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const updateConsumerProfile = async (data: Partial<ConsumerUser>): Promise<boolean> => {
+    if (!consumerUser) return false;
+    const updated = { ...consumerUser, ...data };
+    try {
+      await apiClient('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    } catch {
+      // Offline / fallback persistence
+    }
+    setConsumerUser(updated);
+    localStorage.setItem('agriflow_consumer_auth', JSON.stringify(updated));
+    if (data.preferredLanguage) {
+      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+    }
+    return true;
+  };
+
+  const updateConsumerLanguage = async (lang: string): Promise<boolean> => {
+    return updateConsumerProfile({ preferredLanguage: lang as any });
+  };
+
   const logoutConsumer = () => {
     setConsumerUser(null);
     localStorage.removeItem('agriflow_consumer_auth');
     localStorage.removeItem('agriflow_auth_token');
+    localStorage.removeItem('agriflow_cached_lang');
     router.push('/consumer');
-  };
-
-  const updateConsumerProfile = (data: Partial<ConsumerUser>) => {
-    if (consumerUser) {
-      const updated = { ...consumerUser, ...data };
-      setConsumerUser(updated);
-      localStorage.setItem('agriflow_consumer_auth', JSON.stringify(updated));
-    }
   };
 
   const loginLogistics = async (identifier: string, pass: string): Promise<boolean> => {
@@ -241,6 +417,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setLogisticsUser(res.user);
       localStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
@@ -250,6 +429,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: identifier,
         email: 'ismail.logistics@fleet.in',
         role: 'logistics',
+        state: 'Telangana',
+        district: 'Rangareddy',
+        place: 'Shamshabad Fleet Hub',
+        preferredLanguage: 'hi',
         vehicleType: 'Tata 407 Reefer',
         vehicleNumber: 'TS 08 UB 4192',
         vehicleCapacityKg: 5000,
@@ -260,6 +443,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setLogisticsUser(active);
       localStorage.setItem('agriflow_logistics_auth', JSON.stringify(active));
+      localStorage.setItem('agriflow_cached_lang', 'hi');
       return true;
     } finally {
       setIsLoading(false);
@@ -275,6 +459,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setLogisticsUser(res.user);
       localStorage.setItem('agriflow_logistics_auth', JSON.stringify(res.user));
+      if (res.user.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', res.user.preferredLanguage);
+      }
       if (res.token) localStorage.setItem('agriflow_auth_token', res.token);
       return true;
     } catch {
@@ -284,35 +471,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: data.phone || '',
         email: data.email || 'operator@fleet.in',
         role: 'logistics',
+        state: data.state || 'Telangana',
+        district: data.district || 'Rangareddy',
+        place: data.place || 'Shamshabad Fleet Hub',
+        preferredLanguage: data.preferredLanguage || 'hi',
         vehicleType: data.vehicleType || 'Tata 407 Reefer',
         vehicleNumber: data.vehicleNumber || 'TS 08 UB 4192',
         vehicleCapacityKg: data.vehicleCapacityKg || 5000,
         reeferEnabled: data.reeferEnabled ?? true,
-        operatingRegion: data.operatingRegion || 'Telangana Corridor',
+        operatingRegion: data.operatingRegion || `${data.state || 'Telangana'} Corridor`,
         preferredRoutes: data.preferredRoutes || ['Shadnagar → Hyderabad'],
         createdAt: new Date().toISOString(),
       };
       setLogisticsUser(newOp);
       localStorage.setItem('agriflow_logistics_auth', JSON.stringify(newOp));
+      if (newOp.preferredLanguage) {
+        localStorage.setItem('agriflow_cached_lang', newOp.preferredLanguage);
+      }
       return true;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const updateLogisticsProfile = async (data: Partial<LogisticsOperator>): Promise<boolean> => {
+    if (!logisticsUser) return false;
+    const updated = { ...logisticsUser, ...data };
+    try {
+      await apiClient('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    } catch {
+      // Offline / fallback persistence
+    }
+    setLogisticsUser(updated);
+    localStorage.setItem('agriflow_logistics_auth', JSON.stringify(updated));
+    if (data.preferredLanguage) {
+      localStorage.setItem('agriflow_cached_lang', data.preferredLanguage);
+    }
+    return true;
+  };
+
+  const updateLogisticsLanguage = async (lang: string): Promise<boolean> => {
+    return updateLogisticsProfile({ preferredLanguage: lang as any });
+  };
+
   const logoutLogistics = () => {
     setLogisticsUser(null);
     localStorage.removeItem('agriflow_logistics_auth');
     localStorage.removeItem('agriflow_auth_token');
+    localStorage.removeItem('agriflow_cached_lang');
     router.push('/logistics');
-  };
-
-  const updateLogisticsProfile = (data: Partial<LogisticsOperator>) => {
-    if (logisticsUser) {
-      const updated = { ...logisticsUser, ...data };
-      setLogisticsUser(updated);
-      localStorage.setItem('agriflow_logistics_auth', JSON.stringify(updated));
-    }
   };
 
   const sendPhoneOtp = async (phoneNumber: string, appVerifier?: RecaptchaVerifier | string): Promise<ConfirmationResult> => {
@@ -352,7 +562,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     confirmationResult: ConfirmationResult,
     otpCode: string,
     role: 'farmer' | 'consumer' | 'logistics' | 'fpo',
-    extraData?: { name?: string; phone?: string }
+    extraData?: { name?: string; phone?: string; state?: string; district?: string; place?: string; preferredLanguage?: any }
   ): Promise<void> => {
     setIsLoading(true);
     try {
@@ -387,6 +597,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: phone || '+91 98480 12345',
         email: 'ramesh.reddy@fpo.in',
         role: 'farmer',
+        state: 'Telangana',
+        district: 'Rangareddy',
+        place: 'Shadnagar',
+        preferredLanguage: 'te',
         location: 'Shadnagar, Rangareddy, Telangana',
         farmName: 'Shadnagar Farmers Collective',
         farmerType: 'FPO',
@@ -394,6 +608,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(demoFarmer);
       localStorage.setItem('agriflow_farmer_auth', JSON.stringify(demoFarmer));
+      localStorage.setItem('agriflow_cached_lang', 'te');
     } else if (role === 'consumer') {
       const demoConsumer: ConsumerUser = {
         id: 'consumer-001',
@@ -401,12 +616,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: phone || '+91 98480 54321',
         email: 'priya@wholesale.in',
         role: 'consumer',
+        state: 'Telangana',
+        district: 'Hyderabad',
+        place: 'Bowenpally',
+        preferredLanguage: 'ta',
         location: 'Bowenpally Wholesale Corridor, Hyderabad',
         buyerType: 'bulk-buyer',
         createdAt: new Date().toISOString(),
       };
       setConsumerUser(demoConsumer);
       localStorage.setItem('agriflow_consumer_auth', JSON.stringify(demoConsumer));
+      localStorage.setItem('agriflow_cached_lang', 'ta');
     } else if (role === 'logistics') {
       const demoLogistics: LogisticsOperator = {
         id: 'logistics-001',
@@ -414,6 +634,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: phone || '+91 98480 99881',
         email: 'gurdeep@reeferfleet.in',
         role: 'logistics',
+        state: 'Telangana',
+        district: 'Rangareddy',
+        place: 'Shamshabad Fleet Hub',
+        preferredLanguage: 'hi',
         vehicleType: 'Tata 407 Reefer',
         vehicleNumber: 'TS 08 UB 4192',
         vehicleCapacityKg: 5000,
@@ -424,6 +648,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setLogisticsUser(demoLogistics);
       localStorage.setItem('agriflow_logistics_auth', JSON.stringify(demoLogistics));
+      localStorage.setItem('agriflow_cached_lang', 'hi');
     }
     setIsLoading(false);
   };
@@ -441,14 +666,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        updateFarmerLanguage,
+        updateConsumerLanguage,
+        updateLogisticsLanguage,
+        updateFarmerProfile,
+        updateConsumerProfile,
+        updateLogisticsProfile,
+        refreshUserProfile,
         loginConsumer,
         registerConsumer,
         logoutConsumer,
-        updateConsumerProfile,
         loginLogistics,
         registerLogistics,
         logoutLogistics,
-        updateLogisticsProfile,
         sendPhoneOtp,
         verifyPhoneOtp,
         loginWithGoogle,

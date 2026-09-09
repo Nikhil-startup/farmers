@@ -1,11 +1,17 @@
 import { RoadVehicleType } from './delivery';
 
+export type SupportedLanguage = 'en' | 'te' | 'ta' | 'ml' | 'hi' | 'bn' | 'mr';
+
 export interface LogisticsOperator {
   id: string;
   name: string;
   phone: string;
   email: string;
   role: 'logistics';
+  state?: string;
+  district?: string;
+  place?: string;
+  preferredLanguage?: SupportedLanguage;
   vehicleType: RoadVehicleType;
   vehicleNumber: string;
   vehicleCapacityKg: number;

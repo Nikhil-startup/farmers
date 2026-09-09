@@ -33,6 +33,13 @@ export default function LogisticsLoginPage() {
             themeColor="amber"
           />
 
+          <div className="mt-6 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
+            <span>New carrier or fleet operator? </span>
+            <Link href="/logistics/register" className="text-amber-400 font-bold hover:underline">
+              Create Fleet Account
+            </Link>
+          </div>
+
         </Card>
       </div>
 

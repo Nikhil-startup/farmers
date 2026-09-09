@@ -4,11 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useI18n, SUPPORTED_LANGUAGES, SupportedLanguage } from '@/context/I18nContext';
 import { BuyerType, ProduceGrade } from '@/types/consumer';
 import { 
-  UserPlus, 
   Store, 
-  MapPin, 
   Building2, 
   Utensils, 
   ShoppingBag, 
@@ -16,23 +15,26 @@ import {
   Landmark, 
   Check, 
   ArrowRight, 
-  ArrowLeft 
+  ArrowLeft,
+  Languages
 } from 'lucide-react';
 
 export default function ConsumerRegisterPage() {
   const router = useRouter();
   const { registerConsumer } = useAuth();
+  const { setLanguage, t } = useI18n();
 
   const [step, setStep] = useState(1);
   const [buyerType, setBuyerType] = useState<BuyerType>('bulk-buyer');
   const [name, setName] = useState('Rajesh Varma');
-  const [phone, setPhone] = useState('+91 98480 88776');
+  const [phone, setPhone] = useState('9848088776');
   const [email, setEmail] = useState('rajesh.varma@southern-procure.in');
   const [address, setAddress] = useState('Plot 42, Bowenpally Wholesale Corridor');
-  const [city, setCity] = useState('Hyderabad');
-  const [district, setDistrict] = useState('Hyderabad');
   const [state, setState] = useState('Telangana');
+  const [district, setDistrict] = useState('Hyderabad');
+  const [place, setPlace] = useState('Bowenpally');
   const [pincode, setPincode] = useState('500011');
+  const [preferredLanguage, setPreferredLanguage] = useState<SupportedLanguage>('ta');
   const [preferredGrade, setPreferredGrade] = useState<ProduceGrade>('A');
   const [typicalOrderSizeKg, setTypicalOrderSizeKg] = useState<number>(5000);
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,11 @@ export default function ConsumerRegisterPage() {
     setTypicalOrderSizeKg(option.defaultKg);
   };
 
+  const handleLanguageChange = (lang: SupportedLanguage) => {
+    setPreferredLanguage(lang);
+    setLanguage(lang);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -59,7 +66,11 @@ export default function ConsumerRegisterPage() {
         phone,
         email,
         buyerType,
-        location: `${city}, ${state}`,
+        state,
+        district,
+        place,
+        preferredLanguage,
+        location: `${place}, ${district}, ${state}`,
         preferredGrade,
         typicalOrderSizeKg,
         savedAddresses: [
@@ -67,7 +78,7 @@ export default function ConsumerRegisterPage() {
             id: 'addr-primary',
             label: 'Primary Delivery Location',
             address,
-            city,
+            city: place,
             district,
             state,
             pincode,
@@ -88,10 +99,10 @@ export default function ConsumerRegisterPage() {
           <Store className="w-8 h-8" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
-          Create Buyer Account
+          {t('createAccount')}
         </h1>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Step {step} of 3 • {step === 1 ? 'Select Buyer Type' : step === 2 ? 'Contact & Delivery Location' : 'Sourcing Preferences'}
+          Step {step} of 3 • {step === 1 ? 'Select Buyer Type' : step === 2 ? 'Contact & Location' : 'Sourcing Preferences'}
         </p>
       </div>
 
@@ -156,7 +167,7 @@ export default function ConsumerRegisterPage() {
               onClick={() => setStep(2)}
               className="w-full mt-4 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-colors"
             >
-              Continue to Details <ArrowRight className="w-4 h-4" />
+              {t('next')}: Contact & Location <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -164,71 +175,86 @@ export default function ConsumerRegisterPage() {
         {step === 2 && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-              Contact & Road Sourcing Hub
+              Contact & Sourcing Location
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Full Name / Entity Name
+                  Full Name / Entity Name *
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Mobile Number
+                  Mobile Number (10 Digits) *
                 </label>
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                   required
                 />
               </div>
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Email Address
+                  Email Address (Optional)
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
-                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Delivery Address / Warehouse Corridor
+                  {t('state')} *
                 </label>
                 <input
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  placeholder="e.g. Telangana"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                  City
+                  {t('district')} *
                 </label>
                 <input
                   type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value)}
+                  placeholder="e.g. Hyderabad"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                  {t('place')} *
+                </label>
+                <input
+                  type="text"
+                  value={place}
+                  onChange={(e) => setPlace(e.target.value)}
+                  placeholder="e.g. Bowenpally"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                   required
                 />
               </div>
@@ -241,9 +267,39 @@ export default function ConsumerRegisterPage() {
                   type="text"
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Delivery Address / Warehouse Corridor
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm outline-none"
                   required
                 />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1.5">
+                  <Languages className="w-4 h-4 text-emerald-500" />
+                  <span>{t('preferredLanguage')} *</span>
+                </label>
+                <select
+                  value={preferredLanguage}
+                  onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-bold outline-none"
+                >
+                  {SUPPORTED_LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.nativeLabel} — {l.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -253,14 +309,14 @@ export default function ConsumerRegisterPage() {
                 onClick={() => setStep(1)}
                 className="py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <ArrowLeft className="w-4 h-4" /> Back
+                <ArrowLeft className="w-4 h-4" /> {t('back')}
               </button>
               <button
                 type="button"
                 onClick={() => setStep(3)}
                 className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20"
               >
-                Next: Quality Preferences <ArrowRight className="w-4 h-4" />
+                {t('next')}: Quality Preferences <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -321,14 +377,14 @@ export default function ConsumerRegisterPage() {
                 onClick={() => setStep(2)}
                 className="py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <ArrowLeft className="w-4 h-4" /> Back
+                <ArrowLeft className="w-4 h-4" /> {t('back')}
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 disabled:opacity-50"
               >
-                {loading ? 'Setting up account...' : 'Complete Registration & Open Dashboard'}
+                {loading ? 'Setting up account...' : `${t('createAccount')} & ${t('dashboard')}`}
               </button>
             </div>
           </form>
@@ -337,10 +393,11 @@ export default function ConsumerRegisterPage() {
         <div className="pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800 text-center text-xs text-zinc-500 dark:text-zinc-400">
           Already have a buyer account?{' '}
           <Link href="/consumer/login" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
-            Sign In here
+            {t('login')} here
           </Link>
         </div>
       </div>
     </div>
   );
 }
+

@@ -5,12 +5,18 @@ export type ConsumerOrderStatus = 'Order Placed' | 'Confirmed' | 'Preparing' | '
 export type RiskLevel = 'Low' | 'Medium' | 'High';
 export type RoadVehicleType = 'Tata Ace' | 'Tata 407 Reefer' | 'Mahindra Bolero Maxi Truck';
 
+export type SupportedLanguage = 'en' | 'te' | 'ta' | 'ml' | 'hi' | 'bn' | 'mr';
+
 export interface ConsumerUser {
   id: string;
   name: string;
   phone: string;
   email: string;
   role: 'consumer';
+  state?: string;
+  district?: string;
+  place?: string;
+  preferredLanguage?: SupportedLanguage;
   location: string;
   buyerType: BuyerType;
   preferredProduce?: string[];

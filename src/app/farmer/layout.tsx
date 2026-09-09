@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useI18n } from '@/context/I18nContext';
 import { LowBandwidthToggle } from '@/components/common/LowBandwidthToggle';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import {
   LayoutDashboard,
   Sprout,
@@ -83,13 +84,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
             🚚 Logistics Portal
           </Link>
           <LowBandwidthToggle />
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            className="hover:text-white flex items-center gap-1 font-bold text-xs"
-          >
-            <Languages className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
-          </button>
+          <LanguageSelector variant="compact" />
         </div>
       </div>
 

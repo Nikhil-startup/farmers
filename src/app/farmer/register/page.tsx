@@ -4,19 +4,21 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useI18n, SUPPORTED_LANGUAGES, SupportedLanguage } from '@/context/I18nContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterFormData } from '@/lib/validators';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
-import { ArrowLeft, ArrowRight, CheckCircle2, User, Tractor, Sprout } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Languages, Globe } from 'lucide-react';
 
 export default function FarmerRegisterPage() {
   const router = useRouter();
-  const { loginWithDemo } = useAuth();
+  const { register: registerFarmer } = useAuth();
+  const { setLanguage, t } = useI18n();
   const [step, setStep] = useState(1);
 
-  const { register, handleSubmit, trigger, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
+  const { register, handleSubmit, trigger, setValue, watch, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: 'Venkatesh Rao',
@@ -26,15 +28,23 @@ export default function FarmerRegisterPage() {
       state: 'Telangana',
       district: 'Rangareddy',
       village: 'Chevella Rural',
+      preferredLanguage: 'te',
       farmSize: '8.5 Acres',
       primaryCrops: 'Tomato, Green Chilli, Cotton',
       farmerType: 'FPO',
     },
   });
 
+  const selectedLang = watch('preferredLanguage');
+
+  const handleLanguageSelect = (lang: SupportedLanguage) => {
+    setValue('preferredLanguage', lang);
+    setLanguage(lang);
+  };
+
   const nextStep = async () => {
     if (step === 1) {
-      const valid = await trigger(['fullName', 'phone', 'email', 'farmerType']);
+      const valid = await trigger(['fullName', 'phone', 'email', 'farmerType', 'preferredLanguage']);
       if (valid) setStep(2);
     } else if (step === 2) {
       const valid = await trigger(['farmName', 'state', 'district', 'village', 'farmSize']);
@@ -43,7 +53,20 @@ export default function FarmerRegisterPage() {
   };
 
   const onSubmit = async (data: RegisterFormData) => {
-    await loginWithDemo('farmer', data.fullName, '+91 ' + data.phone);
+    await registerFarmer({
+      name: data.fullName,
+      phone: data.phone,
+      email: data.email,
+      state: data.state,
+      district: data.district,
+      place: data.village,
+      preferredLanguage: data.preferredLanguage,
+      farmName: data.farmName,
+      location: `${data.village}, ${data.district}, ${data.state}`,
+      farmSize: data.farmSize,
+      primaryCrops: data.primaryCrops.split(',').map((c) => c.trim()),
+      farmerType: data.farmerType,
+    });
     router.push('/farmer/dashboard');
   };
 
@@ -52,7 +75,7 @@ export default function FarmerRegisterPage() {
       
       <div className="max-w-xl w-full mx-auto">
         <Link href="/farmer" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition font-medium">
-          <ArrowLeft className="w-4 h-4" /> Back to Farmer Portal
+          <ArrowLeft className="w-4 h-4" /> {t('back')}
         </Link>
       </div>
 
@@ -60,15 +83,15 @@ export default function FarmerRegisterPage() {
         <Card className="bg-slate-900 border-slate-800 p-8 shadow-2xl">
           
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-black text-white tracking-tight">Create your Farmer / FPO Account</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight">{t('createAccount')}</h1>
             <p className="text-xs text-slate-400 mt-1">Join the demand-led agricultural direct network.</p>
           </div>
 
           {/* Stepper Header */}
           <div className="flex items-center justify-between mb-8 px-2">
             {[
-              { num: 1, label: 'Personal' },
-              { num: 2, label: 'Farm / Location' },
+              { num: 1, label: 'Personal & Language' },
+              { num: 2, label: 'Farm & Location' },
               { num: 3, label: 'Crops & Finish' },
             ].map((s) => (
               <div key={s.num} className="flex items-center gap-2">
@@ -88,7 +111,7 @@ export default function FarmerRegisterPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             
-            {/* Step 1: Personal */}
+            {/* Step 1: Personal & Preferred Language */}
             {step === 1 && (
               <div className="space-y-4 animate-in fade-in">
                 <div>
@@ -96,7 +119,7 @@ export default function FarmerRegisterPage() {
                   <input
                     type="text"
                     {...register('fullName')}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                   />
                   {errors.fullName && <p className="text-[11px] text-rose-400 mt-1">{errors.fullName.message}</p>}
                 </div>
@@ -107,7 +130,7 @@ export default function FarmerRegisterPage() {
                     <input
                       type="text"
                       {...register('phone')}
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
                     {errors.phone && <p className="text-[11px] text-rose-400 mt-1">{errors.phone.message}</p>}
                   </div>
@@ -116,7 +139,7 @@ export default function FarmerRegisterPage() {
                     <input
                       type="email"
                       {...register('email')}
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
                   </div>
                 </div>
@@ -125,7 +148,7 @@ export default function FarmerRegisterPage() {
                   <label className="text-xs font-bold text-slate-300 block mb-1">Farmer Category *</label>
                   <select
                     {...register('farmerType')}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                   >
                     <option value="Individual Farmer">Individual Farmer</option>
                     <option value="FPO">Farmer Producer Organization (FPO)</option>
@@ -133,13 +156,32 @@ export default function FarmerRegisterPage() {
                   </select>
                 </div>
 
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1 flex items-center gap-1.5">
+                    <Languages className="w-4 h-4 text-emerald-400" />
+                    <span>Preferred Language (ప్రాధాన్య భాష / भाषा) *</span>
+                  </label>
+                  <select
+                    {...register('preferredLanguage')}
+                    onChange={(e) => handleLanguageSelect(e.target.value as SupportedLanguage)}
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none font-bold"
+                  >
+                    {SUPPORTED_LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code} className="bg-slate-900 text-white font-medium">
+                        {l.nativeLabel} — {l.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.preferredLanguage && <p className="text-[11px] text-rose-400 mt-1">{errors.preferredLanguage.message}</p>}
+                </div>
+
                 <Button type="button" onClick={nextStep} className="w-full py-3 mt-4">
-                  Continue to Farm Details →
+                  {t('next')}: Location Details →
                 </Button>
               </div>
             )}
 
-            {/* Step 2: Farm Details */}
+            {/* Step 2: Location & Farm Details */}
             {step === 2 && (
               <div className="space-y-4 animate-in fade-in">
                 <div>
@@ -147,38 +189,44 @@ export default function FarmerRegisterPage() {
                   <input
                     type="text"
                     {...register('farmName')}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                   />
                   {errors.farmName && <p className="text-[11px] text-rose-400 mt-1">{errors.farmName.message}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1">State *</label>
+                    <label className="text-xs font-bold text-slate-300 block mb-1">{t('state')} *</label>
                     <input
                       type="text"
                       {...register('state')}
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      placeholder="e.g. Telangana / Andhra Pradesh"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
+                    {errors.state && <p className="text-[11px] text-rose-400 mt-1">{errors.state.message}</p>}
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1">District *</label>
+                    <label className="text-xs font-bold text-slate-300 block mb-1">{t('district')} *</label>
                     <input
                       type="text"
                       {...register('district')}
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      placeholder="e.g. Rangareddy"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
+                    {errors.district && <p className="text-[11px] text-rose-400 mt-1">{errors.district.message}</p>}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1">Village / Locality *</label>
+                    <label className="text-xs font-bold text-slate-300 block mb-1">{t('place')} *</label>
                     <input
                       type="text"
                       {...register('village')}
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      placeholder="e.g. Chevella / Shadnagar"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
+                    {errors.village && <p className="text-[11px] text-rose-400 mt-1">{errors.village.message}</p>}
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-300 block mb-1">Farm Land Size *</label>
@@ -186,17 +234,18 @@ export default function FarmerRegisterPage() {
                       type="text"
                       {...register('farmSize')}
                       placeholder="e.g. 10 Acres"
-                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                     />
+                    {errors.farmSize && <p className="text-[11px] text-rose-400 mt-1">{errors.farmSize.message}</p>}
                   </div>
                 </div>
 
                 <div className="flex gap-3 mt-4">
                   <Button type="button" variant="secondary" onClick={() => setStep(1)} className="flex-1">
-                    Back
+                    {t('back')}
                   </Button>
                   <Button type="button" onClick={nextStep} className="flex-1">
-                    Next: Crops →
+                    {t('next')}: Crops →
                   </Button>
                 </div>
               </div>
@@ -211,22 +260,22 @@ export default function FarmerRegisterPage() {
                     type="text"
                     {...register('primaryCrops')}
                     placeholder="e.g. Tomato, Green Chilli, Onion"
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white outline-none"
                   />
                   {errors.primaryCrops && <p className="text-[11px] text-rose-400 mt-1">{errors.primaryCrops.message}</p>}
                 </div>
 
                 <div className="bg-emerald-950/40 border border-emerald-800/40 rounded-xl p-4 text-xs text-slate-300 space-y-1">
                   <span className="font-bold text-emerald-400 block mb-1">✓ Setup Complete</span>
-                  <p>By registering, you can list produce immediately, run AI computer-vision quality checks, and view direct market buyer quotes.</p>
+                  <p>Language & location preferences will be synchronized with your account profile across all your devices.</p>
                 </div>
 
                 <div className="flex gap-3 mt-4">
                   <Button type="button" variant="secondary" onClick={() => setStep(2)} className="flex-1">
-                    Back
+                    {t('back')}
                   </Button>
                   <Button type="submit" isLoading={isSubmitting} className="flex-1">
-                    Complete & Enter Dashboard
+                    {t('createAccount')} & {t('dashboard')}
                   </Button>
                 </div>
               </div>
@@ -237,7 +286,7 @@ export default function FarmerRegisterPage() {
           <div className="mt-6 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
             <span>Already have an account? </span>
             <Link href="/farmer/login" className="text-emerald-400 font-bold hover:underline">
-              Login Here
+              {t('login')} Here
             </Link>
           </div>
 
@@ -245,9 +294,10 @@ export default function FarmerRegisterPage() {
       </div>
 
       <div className="text-center text-xs text-slate-500">
-        AgriFlow AI • Smart India Hackathon Demo Prototype
+        AgriFlow AI • Multilingual Road Freight & Direct Agriculture Platform
       </div>
 
     </div>
   );
 }
+

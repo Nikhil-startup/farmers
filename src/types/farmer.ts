@@ -3,12 +3,18 @@ export type ProduceStatus = 'Active' | 'Reserved' | 'Sold' | 'Expired';
 export type OrderStatus = 'New' | 'Confirmed' | 'Pickup' | 'In Transit' | 'Delivered';
 export type OpportunityLevel = 'High' | 'Medium' | 'Moderate' | 'Normal';
 
+export type SupportedLanguage = 'en' | 'te' | 'ta' | 'ml' | 'hi' | 'bn' | 'mr';
+
 export interface User {
   id: string;
   name: string;
   phone: string;
   email?: string;
   role: 'farmer' | 'consumer' | 'logistics' | 'fpo';
+  state?: string;
+  district?: string;
+  place?: string;
+  preferredLanguage?: SupportedLanguage;
   location?: string;
   farmName?: string;
   farmerType?: 'Individual Farmer' | 'FPO' | 'Farmer Group';

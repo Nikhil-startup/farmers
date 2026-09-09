@@ -1,132 +1,89 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-type Language = 'en' | 'hi';
+import { en } from '@/i18n/en';
+import { te } from '@/i18n/te';
+import { ta } from '@/i18n/ta';
+import { ml } from '@/i18n/ml';
+import { hi } from '@/i18n/hi';
+import { bn } from '@/i18n/bn';
+import { mr } from '@/i18n/mr';
 
-interface I18nContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+export type SupportedLanguage = 'en' | 'te' | 'ta' | 'ml' | 'hi' | 'bn' | 'mr';
+
+export interface LanguageOption {
+  code: SupportedLanguage;
+  label: string;
+  nativeLabel: string;
 }
 
-const translations: Record<Language, Record<string, string>> = {
-  en: {
-    dashboard: 'Dashboard',
-    marketplace: 'Marketplace',
-    cart: 'Cart',
-    orders: 'Orders',
-    tracking: 'Tracking',
-    profile: 'Profile',
-    settings: 'Settings',
-    logout: 'Logout',
-    login: 'Login',
-    register: 'Register',
-    myProduce: 'My Produce',
-    mandiPrices: 'Mandi Prices',
-    demandMap: 'Demand Map',
-    aiRecommendations: 'AI Recommendations',
-    ordersAndDelivery: 'Orders & Delivery',
-    addProduce: '+ Add Produce',
-    todaysOpportunities: "Today's Opportunities",
-    marketSnapshot: 'Market Snapshot',
-    bestTimeToSell: 'Best Time to Sell',
-    groupSelling: 'Group Selling / Produce Pooling',
-    roadLogistics: 'Road Logistics',
-    viewTracking: 'View Tracking',
-    browseMarketplace: 'Browse Marketplace',
-    knowYourFarmer: 'Know Your Farmer',
-    priceTransparency: 'Price Transparency',
-    impactReceipt: 'Impact Receipt',
-    coldChainTelemetry: 'Cold-Chain Telemetry',
-    freshness: 'Harvest Freshness',
-    farmerReceives: 'Farmer Receives',
-    consumerPrice: 'Consumer Price',
-    roadLogisticsFee: 'Road Logistics',
-    platformFee: 'Platform Fee',
-    bulkDemand: 'Create Bulk Demand',
-    multiFarmerFulfillment: 'Multi-Farmer Fulfillment',
-    viewDetails: 'View Details',
-    addToCart: 'Add to Cart',
-    checkout: 'Proceed to Checkout',
-    activeDeliveries: 'Active Deliveries',
-    recommendedForYou: 'AI Recommended Produce',
-    lowBandwidth: 'Low Bandwidth',
-    perishableRisk: 'Perishable Risk',
-    returnLoad: 'Return Load Matching',
-    farmerBenefit: 'Farmer Impact & Realization',
-    conventional: 'Conventional Mandi',
-    agriflowRealization: 'AgriFlow Direct Realization',
-  },
-  hi: {
-    dashboard: 'डैशबोर्ड (Dashboard)',
-    marketplace: 'मंडी बाजार (Marketplace)',
-    cart: 'टोकरी (Cart)',
-    orders: 'ऑर्डर (Orders)',
-    tracking: 'लाइव ट्रैकिंग (Tracking)',
-    profile: 'प्रोफाइल (Profile)',
-    settings: 'सेटिंग्स (Settings)',
-    logout: 'लॉग आउट (Logout)',
-    login: 'लॉग इन (Login)',
-    register: 'पंजीकरण (Register)',
-    myProduce: 'मेरी उपज (My Produce)',
-    mandiPrices: 'मंडी भाव (Mandi Prices)',
-    demandMap: 'मांग नक्शा (Demand Map)',
-    aiRecommendations: 'एआई सिफारिशें (AI Recommendations)',
-    ordersAndDelivery: 'ऑर्डर और डिलीवरी',
-    addProduce: '+ उपज जोड़ें',
-    todaysOpportunities: 'आज के अवसर',
-    marketSnapshot: 'बाजार भाव विवरण',
-    bestTimeToSell: 'बेचने का सही समय',
-    groupSelling: 'समूह बिक्री / उपज पूलिंग',
-    roadLogistics: 'सड़क परिवहन लॉजिस्टिक्स',
-    viewTracking: 'ट्रैकिंग देखें',
-    browseMarketplace: 'उत्पाद देखें (Marketplace)',
-    knowYourFarmer: 'किसान को जानें (Know Your Farmer)',
-    priceTransparency: 'मूल्य पारदर्शिता (Price Breakdown)',
-    impactReceipt: 'खरीद प्रभाव रसीद (Impact Receipt)',
-    coldChainTelemetry: 'कोल्ड-चेन तापमान (Cold-Chain)',
-    freshness: 'कटाई की ताजगी (Freshness)',
-    farmerReceives: 'किसान को मिला',
-    consumerPrice: 'उपभोक्ता मूल्य',
-    roadLogisticsFee: 'सड़क परिवहन भाड़ा',
-    platformFee: 'प्लेटफॉर्म शुल्क',
-    bulkDemand: 'थोक मांग दर्ज करें (Bulk Demand)',
-    multiFarmerFulfillment: 'बहु-किसान समेकन',
-    viewDetails: 'विवरण देखें',
-    addToCart: 'कार्ट में जोड़ें (Add to Cart)',
-    checkout: 'भुगतान करें (Checkout)',
-    activeDeliveries: 'सक्रिय डिलीवरी',
-    recommendedForYou: 'एआई अनुशंसित उपज',
-    lowBandwidth: 'कम बैंडविड्थ मोड',
-    perishableRisk: 'खराब होने का जोखिम',
-    returnLoad: 'वापसी भाड़ा मैचिंग',
-    farmerBenefit: 'किसान लाभ व आमदनी',
-    conventional: 'पारंपरिक मंडी भाव',
-    agriflowRealization: 'एग्रीफ्लो सीधी आमदनी',
-  },
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: 'en', label: 'English', nativeLabel: 'English' },
+  { code: 'te', label: 'Telugu', nativeLabel: 'తెలుగు' },
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' },
+  { code: 'ml', label: 'Malayalam', nativeLabel: 'മലയാളം' },
+  { code: 'hi', label: 'Hindi', nativeLabel: 'हिन्दी' },
+  { code: 'bn', label: 'Bengali', nativeLabel: 'বাংলা' },
+  { code: 'mr', label: 'Marathi', nativeLabel: 'मराठी' },
+];
+
+const dictionaries: Record<SupportedLanguage, Record<string, string>> = {
+  en,
+  te,
+  ta,
+  ml,
+  hi,
+  bn,
+  mr,
 };
+
+interface I18nContextType {
+  language: SupportedLanguage;
+  setLanguage: (lang: SupportedLanguage) => void;
+  syncWithUserProfile: (lang?: SupportedLanguage) => void;
+  t: (key: string) => string;
+  supportedLanguages: LanguageOption[];
+}
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<SupportedLanguage>('en');
 
+  // Load temporary cache on mount
   useEffect(() => {
-    const saved = localStorage.getItem('agriflow_lang') as Language;
-    if (saved === 'en' || saved === 'hi') setLanguageState(saved);
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('agriflow_cached_lang') as SupportedLanguage;
+      if (cached && dictionaries[cached]) {
+        setLanguageState(cached);
+      }
+    }
   }, []);
 
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('agriflow_lang', lang);
+  // Synchronize language from authenticated backend user profile (Source of Truth)
+  const syncWithUserProfile = (userLang?: SupportedLanguage) => {
+    if (userLang && dictionaries[userLang]) {
+      setLanguageState(userLang);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('agriflow_cached_lang', userLang);
+      }
+    }
+  };
+
+  const setLanguage = (newLang: SupportedLanguage) => {
+    if (!dictionaries[newLang]) return;
+    setLanguageState(newLang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('agriflow_cached_lang', newLang);
+    }
   };
 
   const t = (key: string): string => {
-    const currentMap = translations[language] || translations['en'];
-    return (currentMap as Record<string, string>)[key] || (translations['en'] as Record<string, string>)[key] || key;
+    const currentDict = dictionaries[language] || dictionaries.en;
+    return currentDict[key] || dictionaries.en[key] || key;
   };
 
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t }}>
+    <I18nContext.Provider value={{ language, setLanguage, syncWithUserProfile, t, supportedLanguages: SUPPORTED_LANGUAGES }}>
       {children}
     </I18nContext.Provider>
   );
@@ -137,3 +94,4 @@ export function useI18n() {
   if (!context) throw new Error('useI18n must be used within an I18nProvider');
   return context;
 }
+
